@@ -400,7 +400,10 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
               <span style={{fontSize:"0.68rem",color:C.muted}}>{curTheme.name} theme</span>
             </div>
           </div>
-          <iframe key={JSON.stringify(d)+photo+themeId} srcDoc={genHTML(d,photo,themeId)} style={{flex:1,border:"none",background:"#000"}} title="Portfolio Preview" sandbox="allow-scripts"/>
+          <div style={{flex:1,position:"relative",overflow:"hidden"}}>
+            <iframe key={JSON.stringify(d)+photo+themeId} srcDoc={genHTML(d,photo,themeId)} style={{width:"100%",height:"100%",border:"none",background:"#000",display:"block"}} title="Portfolio Preview" sandbox="allow-scripts"/>
+            <div style={{position:"absolute",inset:0,zIndex:10,cursor:"default"}}/>
+          </div>
         </div>
       </div>
     </div>
