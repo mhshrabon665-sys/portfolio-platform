@@ -402,7 +402,7 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
           </div>
           <div style={{flex:1,position:"relative",overflow:"hidden"}}>
             <iframe key={JSON.stringify(d)+photo+themeId} srcDoc={genHTML(d,photo,themeId)} style={{width:"100%",height:"100%",border:"none",background:"#000",display:"block"}} title="Portfolio Preview" sandbox="allow-scripts"/>
-            <div style={{position:"absolute",inset:0,zIndex:10,cursor:"default"}}/>
+            <div style={{position:"absolute",top:0,left:0,right:0,height:"60px",zIndex:10,cursor:"default"}}/>
           </div>
         </div>
       </div>
