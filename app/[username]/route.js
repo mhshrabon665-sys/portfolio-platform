@@ -24,7 +24,7 @@ export async function GET(request, { params }) {
     );
   }
 
-  const html = genHTML(data.portfolio_data, data.photo_url, data.theme_id);
+  const html = genHTML(data.portfolio_data, data.photo_url, data.theme_id, params.username);
 
   return new Response(html, {
     status: 200,
