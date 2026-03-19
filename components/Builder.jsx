@@ -152,6 +152,45 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
   const rmTag=(pi,ti)=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:pr.tags.filter((_,k)=>k!==ti)})}));
   const handlePhoto=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setPhoto(ev.target.result);r.readAsDataURL(f);};
   // download replaced by publish modal
+function buildPdfHtml(d){
+  const e=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const lh=d.socials?.linkedin?d.socials.linkedin.replace(/.*linkedin\.com\/in\//,""):"";
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${e(d.name)} — CV</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',Arial,sans-serif;font-size:10.5pt;color:#111;background:#fff;padding:22mm 24mm;}
+h1{font-size:21pt;font-weight:700;letter-spacing:-0.02em;margin-bottom:3pt;}
+.sub{font-size:10.5pt;color:#333;margin-bottom:7pt;}
+.contacts{font-size:9pt;color:#444;display:flex;flex-wrap:wrap;gap:0 20pt;margin-bottom:18pt;border-bottom:1px solid #ccc;padding-bottom:10pt;}
+.sec{margin-bottom:13pt;page-break-inside:avoid;}
+.sh{font-size:8.5pt;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#111;border-bottom:1.5px solid #111;padding-bottom:3pt;margin-bottom:9pt;}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8pt;margin-bottom:1pt;}
+.t{font-size:10.5pt;font-weight:600;}.s{font-size:9.5pt;color:#444;font-style:italic;}.d{font-size:9pt;color:#555;white-space:nowrap;}
+.bul{margin:4pt 0 9pt 14pt;}.bul li{font-size:9.5pt;color:#333;margin-bottom:2pt;list-style:disc;}
+.tag{display:inline-block;font-size:8pt;color:#444;background:#f0f0f0;padding:1pt 7pt;border-radius:3pt;margin:2pt 3pt 0 0;}
+.sk{margin-bottom:5pt;}.sk b{font-size:9pt;color:#222;}.sk span{font-size:9.5pt;color:#444;}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:12pt;}.ri b{display:block;font-weight:600;margin-bottom:2pt;font-size:9.5pt;}.ri i{color:#555;font-size:9pt;display:block;margin-bottom:3pt;}.ri p{font-size:9pt;color:#555;margin-bottom:1pt;}
+.ach{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5pt;}.ach span{font-size:9.5pt;color:#333;}.ach b{font-size:9pt;color:#555;white-space:nowrap;margin-left:8pt;}
+.cert{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6pt;}.cert-l{font-size:9.5pt;color:#333;}.cert-i{font-size:9pt;color:#666;font-style:italic;margin-left:5pt;}.cert b{font-size:9pt;color:#555;white-space:nowrap;margin-left:8pt;}
+@page{margin:20mm;}@media print{body{padding:0;}}
+</style></head><body>
+<h1>${e(d.name)}</h1>
+<div class="sub">${e(d.rolesLine1)}${d.rolesLine2?" · "+e(d.rolesLine2):""}</div>
+<div class="contacts">${d.email?`<span>✉ ${e(d.email)}</span>`:""}${d.phone?`<span>✆ ${e(d.phone)}</span>`:""}${d.location?`<span>⌂ ${e(d.location)}</span>`:""}${lh?`<span>🔗 ${e(lh)}</span>`:""}</div>
+${d.bio?`<div class="sec"><div class="sh">Professional Summary</div><p style="font-size:9.5pt;color:#333;line-height:1.6;">${e(d.bio)}</p></div>`:""}
+${d.education?.length?`<div class="sec"><div class="sh">Education</div>${d.education.map(x=>`<div style="margin-bottom:8pt;"><div class="row"><span class="t">${e(x.degree)}</span><span class="d">${e(x.year)}</span></div><div class="s">${e(x.institution)}${x.badge?` &nbsp;<span style="background:#f0f0f0;padding:1pt 7pt;border-radius:3pt;font-size:8.5pt;">${e(x.badge)}</span>`:""}</div></div>`).join("")}</div>`:""}
+${d.experience?.length?`<div class="sec"><div class="sh">Experience</div>${d.experience.map(x=>`<div style="margin-bottom:8pt;"><div class="row"><span class="t">${e(x.title)}</span><span class="d">${e(x.year)}</span></div><div class="s">${e(x.company)}</div>${x.bullets?.length?`<ul class="bul">${x.bullets.map(b=>`<li>${e(b)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>`:""}
+${d.projects?.length?`<div class="sec"><div class="sh">Projects</div>${d.projects.map(x=>`<div style="margin-bottom:9pt;"><div class="row"><span class="t">${e(x.name)}</span><span class="d">${e(x.year)}</span></div><p style="font-size:9.5pt;color:#333;margin-top:3pt;line-height:1.5;">${e(x.desc)}</p>${x.tags?.length?`<div style="margin-top:4pt;">${x.tags.map(t=>`<span class="tag">${e(t)}</span>`).join("")}</div>`:""}</div>`).join("")}</div>`:""}
+${d.certifications?.length?`<div class="sec"><div class="sh">Certifications</div>${d.certifications.map(x=>`<div class="cert"><span><span class="cert-l">${e(x.name)}</span>${x.issuer?`<span class="cert-i">— ${e(x.issuer)}</span>`:""}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
+${d.achievements?.length?`<div class="sec"><div class="sh">Achievements &amp; Recognition</div>${d.achievements.map(x=>`<div class="ach"><span>${x.icon} ${e(x.text)}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
+${d.leadership?.length?`<div class="sec"><div class="sh">Leadership &amp; Extracurricular</div>${d.leadership.map(x=>`<div style="margin-bottom:6pt;"><div class="row"><span class="t">${e(x.role)}</span><span class="d">${e(x.date)}</span></div><div class="s">${e(x.org)}</div></div>`).join("")}</div>`:""}
+${d.skillGroups?.length?`<div class="sec"><div class="sh">Skills &amp; Technologies</div>${d.skillGroups.map(g=>`<div class="sk"><b>${e(g.label)}: </b><span>${g.skills.map(s=>e(s)).join(" · ")}</span></div>`).join("")}</div>`:""}
+${d.references?.length?`<div class="sec"><div class="sh">References</div><div class="rg">${d.references.map(r=>`<div class="ri"><b>${e(r.name)}</b><i>${r.role.split("\\n").map(l=>e(l)).join("<br>")}</i><p>✆ ${e(r.phone)}</p><p>✉ ${e(r.email)}</p></div>`).join("")}</div></div>`:""}
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+}
+
   const downloadPDF=()=>{
     const html=buildPdfHtml(d);
     const blob=new Blob([html],{type:'text/html'});
