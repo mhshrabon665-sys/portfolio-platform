@@ -3,15 +3,17 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { RESERVED } from '@/lib/builderData';
 
 async function uploadToCloudinary(base64Data, mimeType) {
-  const dataUri = `data:${mimeType};base64,${base64Data}`;
-  const formData = new FormData();
-  formData.append('file', dataUri);
-  formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
-  formData.append('folder', 'portfolio-photos');
-
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file: `data:${mimeType};base64,${base64Data}`,
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
+        folder: 'portfolio-photos',
+      }),
+    }
   );
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
@@ -63,7 +65,7 @@ export async function POST(request) {
 
     return Response.json({ success: true, url: `/${u}` });
   } catch (err) {
-    console.error('Publish error:', err);
-    return Response.json({ error: 'Server error. Please try again.' }, { status: 500 });
+    console.error('Publish error:', err.message);
+    return Response.json({ error: 'Server error: ' + err.message }, { status: 500 });
   }
 }
