@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -30,7 +30,7 @@ export default function Home() {
         body {
           background: var(--bg);
           color: var(--text);
-          font-family: 'Syne', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
         }
@@ -78,7 +78,7 @@ export default function Home() {
         }
 
         .nav-brand {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.9rem;
           font-weight: 500;
           color: var(--accent);
@@ -123,7 +123,7 @@ export default function Home() {
           border-radius: 100px;
           border: 1px solid rgba(14,165,233,0.3);
           background: rgba(14,165,233,0.06);
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--accent);
           letter-spacing: 0.04em;
@@ -151,7 +151,7 @@ export default function Home() {
         h1 .accent { color: var(--accent); }
 
         h1 .mono {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.85em;
           font-weight: 400;
           color: var(--muted);
@@ -185,7 +185,7 @@ export default function Home() {
           border-radius: 10px;
           background: var(--accent);
           color: #000;
-          font-family: 'Syne', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 0.92rem;
           font-weight: 700;
           text-decoration: none;
@@ -208,7 +208,7 @@ export default function Home() {
           background: transparent;
           border: 1px solid var(--border);
           color: var(--muted);
-          font-family: 'Syne', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 0.92rem;
           font-weight: 600;
           text-decoration: none;
@@ -244,7 +244,7 @@ export default function Home() {
           font-weight: 800;
           color: var(--accent);
           letter-spacing: -0.04em;
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
         }
 
         .stat-label {
@@ -265,7 +265,7 @@ export default function Home() {
         }
 
         .section-label {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--accent);
           letter-spacing: 0.1em;
@@ -340,7 +340,7 @@ export default function Home() {
         .step:last-child { border-right: none; }
 
         .step-num {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 2.4rem;
           font-weight: 300;
           color: var(--border);
@@ -382,7 +382,7 @@ export default function Home() {
           background: var(--surf);
           font-size: 0.76rem;
           color: var(--muted);
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
         }
 
         .theme-dot {
@@ -447,13 +447,13 @@ export default function Home() {
         }
 
         .footer-copy {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--muted);
         }
 
         .footer-link {
-          font-family: 'DM Mono', monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--muted);
           text-decoration: none;
