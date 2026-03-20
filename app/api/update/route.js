@@ -1,18 +1,21 @@
 import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase';
 
-// Delete a storage file using direct HTTP — more reliable in serverless than JS client
+// Delete a storage file via Supabase Storage REST API
 async function deleteStorageFile(filePath) {
   try {
-    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/portfolio-photos/${encodeURIComponent(filePath)}`;
+    // Correct endpoint: DELETE /storage/v1/object/{bucket} with JSON body {prefixes:[...]}
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/portfolio-photos`;
     const res = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ prefixes: [filePath] }),
     });
-    console.log('[delete] status:', res.status, 'path:', filePath);
+    const result = await res.json();
+    console.log('[delete] status:', res.status, 'path:', filePath, 'result:', JSON.stringify(result));
     return res.ok;
   } catch (e) {
     console.error('[delete] error:', e.message);
