@@ -11,8 +11,7 @@ async function uploadToCloudinary(base64Data, mimeType) {
       body: JSON.stringify({
         file: `data:${mimeType};base64,${base64Data}`,
         upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
-        use_filename: false,
-        display_name: 'photo',
+        folder: 'portfolio-photos',
       }),
     }
   );
