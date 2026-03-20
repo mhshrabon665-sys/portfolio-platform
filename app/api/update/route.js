@@ -26,65 +26,58 @@ export async function PUT(request) {
       return Response.json({ error: 'Incorrect password.' }, { status: 401 });
     }
 
-    // Delete a specific file from storage by its path
-    const deleteFile = async (filePath) => {
-      try {
-        console.log('[photo] deleting:', filePath);
-        const { error: delError } = await supabaseAdmin.storage
-          .from('portfolio-photos')
-          .remove([filePath]);
-        if (delError) console.error('[photo] delete error:', delError.message);
-        else console.log('[photo] deleted ok:', filePath);
-      } catch (e) {
-        console.error('[photo] delete exception:', e.message);
-      }
-    };
-
-    // Extract file path from a Supabase storage URL
-    const extractPath = (url) => {
-      if (!url) return null;
-      const marker = '/portfolio-photos/';
-      const idx = url.indexOf(marker);
-      if (idx === -1) return null;
-      return decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
-    };
-
     let photoUrl = data.photo_url;
+    let oldFilePath = null;
 
     if (photo && photo.startsWith('data:image')) {
-      // Delete old photo first
-      const oldPath = extractPath(data.photo_url);
-      if (oldPath) await deleteFile(oldPath);
+      // Extract old file path BEFORE uploading new one
+      if (data.photo_url) {
+        try {
+          // URL format: .../storage/v1/object/public/portfolio-photos/USERNAME/FILENAME
+          // Split on 'portfolio-photos/' and take everything after, strip query params
+          const parts = data.photo_url.split('portfolio-photos/');
+          if (parts.length > 1) {
+            oldFilePath = decodeURIComponent(parts[1].split('?')[0]);
+          }
+        } catch (e) {
+          console.error('Path extraction failed:', e.message);
+        }
+      }
 
-      // Upload new photo with timestamp filename (unique URL = no CDN cache)
+      // Upload new photo with timestamp in filename
       const base64Data = photo.split(',')[1];
       const mimeType = photo.split(';')[0].split(':')[1];
       const ext = mimeType.split('/')[1] || 'jpg';
       const fileName = `${u}/photo_${Date.now()}.${ext}`;
       const buffer = Buffer.from(base64Data, 'base64');
 
-      console.log('[photo] uploading:', fileName);
       const { error: uploadError } = await supabaseAdmin.storage
         .from('portfolio-photos')
         .upload(fileName, buffer, { contentType: mimeType, upsert: false });
 
       if (uploadError) {
-        console.error('[photo] upload error:', uploadError.message);
+        console.error('Upload error:', uploadError.message);
       } else {
         const { data: urlData } = supabaseAdmin.storage
           .from('portfolio-photos')
           .getPublicUrl(fileName);
         photoUrl = urlData.publicUrl;
-        console.log('[photo] new url:', photoUrl);
       }
+
     } else if (photo === null) {
-      // User removed photo — delete from storage
-      const oldPath = extractPath(data.photo_url);
-      if (oldPath) await deleteFile(oldPath);
+      // User removed photo
+      if (data.photo_url) {
+        try {
+          const parts = data.photo_url.split('portfolio-photos/');
+          if (parts.length > 1) {
+            oldFilePath = decodeURIComponent(parts[1].split('?')[0]);
+          }
+        } catch (e) {}
+      }
       photoUrl = null;
     }
-    // photo === undefined means no change — keep existing photoUrl
 
+    // Update DB first
     const { error: updateError } = await supabaseAdmin
       .from('portfolios')
       .update({
@@ -96,6 +89,16 @@ export async function PUT(request) {
       .eq('username', u);
 
     if (updateError) throw updateError;
+
+    // Delete old file AFTER DB is updated successfully
+    if (oldFilePath) {
+      console.log('Deleting old file:', oldFilePath);
+      const { error: delError } = await supabaseAdmin.storage
+        .from('portfolio-photos')
+        .remove([oldFilePath]);
+      if (delError) console.error('Delete failed:', delError.message);
+      else console.log('Deleted successfully:', oldFilePath);
+    }
 
     return Response.json({ success: true });
 
