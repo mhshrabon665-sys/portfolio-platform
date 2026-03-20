@@ -1,11 +1,37 @@
+'use client';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'builtbypassion — Free Portfolio Builder',
-  description: 'Build and publish your professional portfolio in minutes. No code needed.',
-};
+import { useEffect } from 'react';
 
 export default function Home() {
+  useEffect(() => {
+    const phrases = [
+      '// no code needed',
+      '// free forever',
+      '// live in minutes',
+      '// your own url',
+      '// 8 themes included',
+      '// pdf export built in',
+    ];
+    const el = document.getElementById('hero-typewriter');
+    if (!el) return;
+    let idx = 0, n = 0, deleting = false;
+    let timer;
+    function tick() {
+      const cur = phrases[idx];
+      if (!deleting) {
+        n++;
+        el.textContent = cur.substring(0, n);
+        if (n >= cur.length) { deleting = true; timer = setTimeout(tick, 2200); return; }
+      } else {
+        n--;
+        el.textContent = cur.substring(0, n);
+        if (n <= 0) { deleting = false; idx = (idx + 1) % phrases.length; }
+      }
+      timer = setTimeout(tick, deleting ? 36 : 72);
+    }
+    timer = setTimeout(tick, 1200);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <>
       <style>{`
@@ -607,42 +633,7 @@ export default function Home() {
         </div>
       </footer>
 
-      <script dangerouslySetInnerHTML={{__html: `
-        (function() {
-          var phrases = [
-            '// no code needed',
-            '// free forever',
-            '// live in minutes',
-            '// your own url',
-            '// 8 themes included',
-            '// pdf export built in',
-          ];
-          var el = document.getElementById('hero-typewriter');
-          if (!el) return;
-          var idx = 0, n = 0, deleting = false;
-          function tick() {
-            var cur = phrases[idx];
-            if (!deleting) {
-              n++;
-              el.textContent = cur.substring(0, n);
-              if (n >= cur.length) {
-                deleting = true;
-                setTimeout(tick, 2200);
-                return;
-              }
-            } else {
-              n--;
-              el.textContent = cur.substring(0, n);
-              if (n <= 0) {
-                deleting = false;
-                idx = (idx + 1) % phrases.length;
-              }
-            }
-            setTimeout(tick, deleting ? 36 : 72);
-          }
-          setTimeout(tick, 1200);
-        })();
-      `}} />
+
     </>
   );
 }
