@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -30,7 +30,7 @@ export default function Home() {
         body {
           background: var(--bg);
           color: var(--text);
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: 'Nunito', sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
         }
@@ -185,7 +185,7 @@ export default function Home() {
           border-radius: 10px;
           background: var(--accent);
           color: #000;
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: 'Nunito', sans-serif;
           font-size: 0.92rem;
           font-weight: 700;
           text-decoration: none;
@@ -208,7 +208,7 @@ export default function Home() {
           background: transparent;
           border: 1px solid var(--border);
           color: var(--muted);
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: 'Nunito', sans-serif;
           font-size: 0.92rem;
           font-weight: 600;
           text-decoration: none;
