@@ -26,51 +26,64 @@ export async function PUT(request) {
       return Response.json({ error: 'Incorrect password.' }, { status: 401 });
     }
 
-    // Delete old photo from storage bucket
-    const deleteOldPhoto = async () => {
-      if (!data.photo_url) return;
+    // Delete a specific file from storage by its path
+    const deleteFile = async (filePath) => {
       try {
-        const marker = '/portfolio-photos/';
-        const idx = data.photo_url.indexOf(marker);
-        if (idx !== -1) {
-          const filePath = decodeURIComponent(
-            data.photo_url.slice(idx + marker.length).split('?')[0]
-          );
-          await supabaseAdmin.storage.from('portfolio-photos').remove([filePath]);
-        }
+        console.log('[photo] deleting:', filePath);
+        const { error: delError } = await supabaseAdmin.storage
+          .from('portfolio-photos')
+          .remove([filePath]);
+        if (delError) console.error('[photo] delete error:', delError.message);
+        else console.log('[photo] deleted ok:', filePath);
       } catch (e) {
-        console.warn('Old photo delete failed (non-critical):', e.message);
+        console.error('[photo] delete exception:', e.message);
       }
+    };
+
+    // Extract file path from a Supabase storage URL
+    const extractPath = (url) => {
+      if (!url) return null;
+      const marker = '/portfolio-photos/';
+      const idx = url.indexOf(marker);
+      if (idx === -1) return null;
+      return decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
     };
 
     let photoUrl = data.photo_url;
 
     if (photo && photo.startsWith('data:image')) {
       // Delete old photo first
-      await deleteOldPhoto();
+      const oldPath = extractPath(data.photo_url);
+      if (oldPath) await deleteFile(oldPath);
 
+      // Upload new photo with timestamp filename (unique URL = no CDN cache)
       const base64Data = photo.split(',')[1];
       const mimeType = photo.split(';')[0].split(':')[1];
       const ext = mimeType.split('/')[1] || 'jpg';
-      // Timestamp in filename = unique URL every time = no CDN cache issues
       const fileName = `${u}/photo_${Date.now()}.${ext}`;
       const buffer = Buffer.from(base64Data, 'base64');
 
+      console.log('[photo] uploading:', fileName);
       const { error: uploadError } = await supabaseAdmin.storage
         .from('portfolio-photos')
         .upload(fileName, buffer, { contentType: mimeType, upsert: false });
 
-      if (!uploadError) {
+      if (uploadError) {
+        console.error('[photo] upload error:', uploadError.message);
+      } else {
         const { data: urlData } = supabaseAdmin.storage
           .from('portfolio-photos')
           .getPublicUrl(fileName);
         photoUrl = urlData.publicUrl;
+        console.log('[photo] new url:', photoUrl);
       }
     } else if (photo === null) {
-      await deleteOldPhoto();
+      // User removed photo — delete from storage
+      const oldPath = extractPath(data.photo_url);
+      if (oldPath) await deleteFile(oldPath);
       photoUrl = null;
     }
-    // photo === undefined means unchanged — keep existing photoUrl
+    // photo === undefined means no change — keep existing photoUrl
 
     const { error: updateError } = await supabaseAdmin
       .from('portfolios')
