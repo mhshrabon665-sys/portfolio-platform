@@ -11,7 +11,6 @@ export async function PUT(request) {
 
     const u = username.toLowerCase();
 
-    // Verify password first
     const { data, error } = await supabaseAdmin
       .from('portfolios')
       .select('password_hash, photo_url')
@@ -27,15 +26,16 @@ export async function PUT(request) {
       return Response.json({ error: 'Incorrect password.' }, { status: 401 });
     }
 
-    // Helper: delete old photo from storage bucket
+    // Delete old photo from storage bucket
     const deleteOldPhoto = async () => {
       if (!data.photo_url) return;
       try {
-        // Extract file path from URL: everything after /portfolio-photos/
         const marker = '/portfolio-photos/';
         const idx = data.photo_url.indexOf(marker);
         if (idx !== -1) {
-          const filePath = decodeURIComponent(data.photo_url.slice(idx + marker.length).split('?')[0]);
+          const filePath = decodeURIComponent(
+            data.photo_url.slice(idx + marker.length).split('?')[0]
+          );
           await supabaseAdmin.storage.from('portfolio-photos').remove([filePath]);
         }
       } catch (e) {
@@ -46,18 +46,19 @@ export async function PUT(request) {
     let photoUrl = data.photo_url;
 
     if (photo && photo.startsWith('data:image')) {
-      // New photo uploaded — delete old one first, then upload new
+      // Delete old photo first
       await deleteOldPhoto();
 
       const base64Data = photo.split(',')[1];
       const mimeType = photo.split(';')[0].split(':')[1];
       const ext = mimeType.split('/')[1] || 'jpg';
-      const fileName = `${u}/photo.${ext}`;
+      // Timestamp in filename = unique URL every time = no CDN cache issues
+      const fileName = `${u}/photo_${Date.now()}.${ext}`;
       const buffer = Buffer.from(base64Data, 'base64');
 
       const { error: uploadError } = await supabaseAdmin.storage
         .from('portfolio-photos')
-        .upload(fileName, buffer, { contentType: mimeType, upsert: true });
+        .upload(fileName, buffer, { contentType: mimeType, upsert: false });
 
       if (!uploadError) {
         const { data: urlData } = supabaseAdmin.storage
@@ -66,13 +67,11 @@ export async function PUT(request) {
         photoUrl = urlData.publicUrl;
       }
     } else if (photo === null) {
-      // User explicitly removed photo — delete from storage too
       await deleteOldPhoto();
       photoUrl = null;
     }
-    // if photo is undefined — not changed, keep existing photoUrl
+    // photo === undefined means unchanged — keep existing photoUrl
 
-    // Update database
     const { error: updateError } = await supabaseAdmin
       .from('portfolios')
       .update({
