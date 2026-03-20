@@ -493,7 +493,7 @@ export default function Home() {
         <h1>
           Your portfolio,<br />
           <span className="accent">live</span> in minutes<br />
-          <span className="mono">// no code needed</span>
+          <span className="mono" id="hero-typewriter">// no code needed</span>
         </h1>
         <p className="hero-sub">
           Fill in your details, pick a theme, hit publish. Get a real URL you can share with anyone — instantly.
@@ -606,6 +606,43 @@ export default function Home() {
           <Link href="/portfolio" className="footer-link">Builder</Link>
         </div>
       </footer>
+
+      <script dangerouslySetInnerHTML={{__html: `
+        (function() {
+          var phrases = [
+            '// no code needed',
+            '// free forever',
+            '// live in minutes',
+            '// your own url',
+            '// 8 themes included',
+            '// pdf export built in',
+          ];
+          var el = document.getElementById('hero-typewriter');
+          if (!el) return;
+          var idx = 0, n = 0, deleting = false;
+          function tick() {
+            var cur = phrases[idx];
+            if (!deleting) {
+              n++;
+              el.textContent = cur.substring(0, n);
+              if (n >= cur.length) {
+                deleting = true;
+                setTimeout(tick, 2200);
+                return;
+              }
+            } else {
+              n--;
+              el.textContent = cur.substring(0, n);
+              if (n <= 0) {
+                deleting = false;
+                idx = (idx + 1) % phrases.length;
+              }
+            }
+            setTimeout(tick, deleting ? 36 : 72);
+          }
+          setTimeout(tick, 1200);
+        })();
+      `}} />
     </>
   );
 }
