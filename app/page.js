@@ -5,12 +5,12 @@ import { useEffect } from 'react';
 export default function Home() {
   useEffect(() => {
     const phrases = [
-      '// no code needed',
-      '// free forever',
-      '// live in minutes',
-      '// your own url',
-      '// 8 themes included',
-      '// pdf export built in',
+      'no code needed',
+      'free forever',
+      'live in minutes',
+      'your own url',
+      '8 themes',
+      'pdf export',
     ];
     const el = document.getElementById('hero-typewriter');
     if (!el) return;
@@ -519,7 +519,7 @@ export default function Home() {
         <h1>
           Your portfolio,<br />
           <span className="accent">live</span> in minutes<br />
-          <span className="mono" id="hero-typewriter">// no code needed</span>
+          <span className="mono">// <span id="hero-typewriter">no code needed</span></span>
         </h1>
         <p className="hero-sub">
           Fill in your details, pick a theme, hit publish. Get a real URL you can share with anyone — instantly.
@@ -528,6 +528,9 @@ export default function Home() {
           <Link href="/portfolio" className="btn-primary">Build Your Portfolio →</Link>
           <a href="#how" className="btn-ghost">See how it works</a>
         </div>
+        <p style={{marginTop:20,fontSize:'0.72rem',color:'var(--muted)',fontFamily:"'IBM Plex Mono',monospace",display:'flex',alignItems:'center',gap:6}}>
+          <span>🖥️</span> Best experienced on a desktop or laptop
+        </p>
       </section>
 
       {/* STATS */}
