@@ -1,29 +1,28 @@
 import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase';
 
-// Delete a storage file via Supabase Storage REST API
-async function deleteStorageFile(filePath) {
+// Call the Edge Function to delete old photo
+async function deleteOldPhoto(filePath) {
   try {
-    // Correct endpoint: DELETE /storage/v1/object/{bucket} with JSON body {prefixes:[...]}
-    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/portfolio-photos`;
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prefixes: [filePath] }),
-    });
+    const res = await fetch(
+      'https://jrgtzyqsfgtjmugllsgz.supabase.co/functions/v1/delete-old-photo',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.SUPABASE_SERVICE_ROLE_KEY,
+        },
+        body: JSON.stringify({ filePath }),
+      }
+    );
     const result = await res.json();
-    console.log('[delete] status:', res.status, 'path:', filePath, 'result:', JSON.stringify(result));
-    return res.ok;
+    console.log('[edge-delete]', res.status, JSON.stringify(result));
   } catch (e) {
-    console.error('[delete] error:', e.message);
-    return false;
+    console.error('[edge-delete] error:', e.message);
   }
 }
 
-// Extract storage path from a Supabase public URL
+// Extract storage path from Supabase public URL
 function extractPath(url) {
   if (!url) return null;
   try {
@@ -64,7 +63,7 @@ export async function PUT(request) {
     const oldPath = extractPath(data.photo_url);
 
     if (photo && photo.startsWith('data:image')) {
-      // Step 1: Upload new photo first
+      // Upload new photo
       const base64Data = photo.split(',')[1];
       const mimeType = photo.split(';')[0].split(':')[1];
       const ext = mimeType.split('/')[1] || 'jpg';
@@ -80,17 +79,15 @@ export async function PUT(request) {
           .from('portfolio-photos')
           .getPublicUrl(fileName);
         photoUrl = urlData.publicUrl;
-
-        // Step 2: Delete old photo via direct HTTP after successful upload
-        if (oldPath) await deleteStorageFile(oldPath);
+        // Delete old photo via Edge Function
+        if (oldPath) await deleteOldPhoto(oldPath);
       }
 
     } else if (photo === null) {
       photoUrl = null;
-      if (oldPath) await deleteStorageFile(oldPath);
+      if (oldPath) await deleteOldPhoto(oldPath);
     }
 
-    // Step 3: Update database
     const { error: updateError } = await supabaseAdmin
       .from('portfolios')
       .update({
