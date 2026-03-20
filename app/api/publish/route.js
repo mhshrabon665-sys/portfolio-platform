@@ -3,16 +3,21 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { RESERVED } from '@/lib/builderData';
 
 async function uploadToCloudinary(base64Data, mimeType) {
+  // Convert base64 to Blob to avoid mimeType slash issues with JSON body
+  const byteCharacters = atob(base64Data);
+  const byteArray = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteArray[i] = byteCharacters.charCodeAt(i);
+  }
+  const blob = new Blob([byteArray], { type: mimeType });
+
+  const formData = new FormData();
+  formData.append('file', blob, 'photo');
+  formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
+
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file: `data:${mimeType};base64,${base64Data}`,
-        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
-      }),
-    }
+    { method: 'POST', body: formData }
   );
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
