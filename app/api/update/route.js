@@ -62,7 +62,9 @@ export async function PUT(request) {
 
     return Response.json({ success: true });
   } catch (err) {
-    console.error('Update error:', err);
-    return Response.json({ error: 'Server error. Please try again.' }, { status: 500 });
+    console.error('Update error:', err.message || err);
+    console.error('CLOUDINARY_CLOUD_NAME set:', !!process.env.CLOUDINARY_CLOUD_NAME);
+    console.error('CLOUDINARY_UPLOAD_PRESET set:', !!process.env.CLOUDINARY_UPLOAD_PRESET);
+    return Response.json({ error: 'Server error: ' + (err.message || 'unknown') }, { status: 500 });
   }
 }
