@@ -2,16 +2,20 @@ import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase';
 import { RESERVED } from '@/lib/builderData';
 
-async function uploadToImgbb(base64Data) {
-  const formData = new URLSearchParams();
-  formData.append('image', base64Data);
+async function uploadToCloudinary(base64Data, mimeType) {
+  const dataUri = `data:${mimeType};base64,${base64Data}`;
+  const formData = new FormData();
+  formData.append('file', dataUri);
+  formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
+  formData.append('folder', 'portfolio-photos');
+
   const res = await fetch(
-    `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
+    `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
     { method: 'POST', body: formData }
   );
   const data = await res.json();
-  if (!data.success) throw new Error(data.error?.message || 'imgbb upload failed');
-  return data.data.url;
+  if (data.error) throw new Error(data.error.message);
+  return data.secure_url;
 }
 
 export async function POST(request) {
@@ -43,8 +47,9 @@ export async function POST(request) {
 
     let photoUrl = null;
     if (photo && photo.startsWith('data:image')) {
+      const mimeType = photo.split(';')[0].split(':')[1];
       const base64Data = photo.split(',')[1];
-      photoUrl = await uploadToImgbb(base64Data);
+      photoUrl = await uploadToCloudinary(base64Data, mimeType);
     }
 
     const { error } = await supabaseAdmin.from('portfolios').insert({
