@@ -150,7 +150,39 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
   const updTag=(pi,ti,v)=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:pr.tags.map((t,k)=>k===ti?v:t)})}));
   const addTag=pi=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:[...pr.tags,""]})}));
   const rmTag=(pi,ti)=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:pr.tags.filter((_,k)=>k!==ti)})}));
-  const handlePhoto=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setPhoto(ev.target.result);r.readAsDataURL(f);};
+  const handlePhoto=e=>{
+    const f=e.target.files[0];
+    if(!f)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        // Compress to max 40KB using canvas
+        const MAX_BYTES=40*1024;
+        const canvas=document.createElement('canvas');
+        // Resize to max 500x500 keeping aspect ratio
+        let w=img.width, h=img.height;
+        const maxDim=500;
+        if(w>maxDim||h>maxDim){
+          if(w>h){h=Math.round(h*maxDim/w);w=maxDim;}
+          else{w=Math.round(w*maxDim/h);h=maxDim;}
+        }
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        // Try decreasing quality until under 40KB
+        let quality=0.85;
+        let dataUrl=canvas.toDataURL('image/jpeg',quality);
+        while(dataUrl.length*0.75>MAX_BYTES&&quality>0.1){
+          quality-=0.05;
+          dataUrl=canvas.toDataURL('image/jpeg',quality);
+        }
+        setPhoto(dataUrl);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  };
   // download replaced by publish modal
 function buildPdfHtml(d){
   const e=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
