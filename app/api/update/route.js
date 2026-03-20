@@ -2,19 +2,30 @@ import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase';
 
 async function uploadToCloudinary(base64Data, mimeType) {
-  const dataUri = `data:${mimeType};base64,${base64Data}`;
-  const formData = new FormData();
-  formData.append('file', dataUri);
-  formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
-  formData.append('folder', 'portfolio-photos');
-
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file: `data:${mimeType};base64,${base64Data}`,
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
+        folder: 'portfolio-photos',
+      }),
+    }
   );
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.secure_url;
+}
+
+function extractPath(url) {
+  if (!url) return null;
+  try {
+    const parts = url.split('/portfolio-photos/');
+    if (parts.length < 2) return null;
+    return decodeURIComponent(parts[1].split('?')[0]);
+  } catch { return null; }
 }
 
 export async function PUT(request) {
@@ -29,14 +40,10 @@ export async function PUT(request) {
     const { data, error } = await supabaseAdmin
       .from('portfolios').select('password_hash, photo_url').eq('username', u).single();
 
-    if (error || !data) {
-      return Response.json({ error: 'Portfolio not found.' }, { status: 404 });
-    }
+    if (error || !data) return Response.json({ error: 'Portfolio not found.' }, { status: 404 });
 
     const match = await bcrypt.compare(password, data.password_hash);
-    if (!match) {
-      return Response.json({ error: 'Incorrect password.' }, { status: 401 });
-    }
+    if (!match) return Response.json({ error: 'Incorrect password.' }, { status: 401 });
 
     let photoUrl = data.photo_url;
 
@@ -61,10 +68,9 @@ export async function PUT(request) {
     if (updateError) throw updateError;
 
     return Response.json({ success: true });
+
   } catch (err) {
-    console.error('Update error:', err.message || err);
-    console.error('CLOUDINARY_CLOUD_NAME set:', !!process.env.CLOUDINARY_CLOUD_NAME);
-    console.error('CLOUDINARY_UPLOAD_PRESET set:', !!process.env.CLOUDINARY_UPLOAD_PRESET);
-    return Response.json({ error: 'Server error: ' + (err.message || 'unknown') }, { status: 500 });
+    console.error('Update error:', err.message);
+    return Response.json({ error: 'Server error: ' + err.message }, { status: 500 });
   }
 }
