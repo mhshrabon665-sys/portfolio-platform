@@ -6,7 +6,6 @@ export async function POST(request) {
   try {
     const { username, password, portfolioData, photo, themeId } = await request.json();
 
-    // Validate
     if (!username || !password || !portfolioData) {
       return Response.json({ error: 'Missing required fields.' }, { status: 400 });
     }
@@ -25,7 +24,6 @@ export async function POST(request) {
       return Response.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
     }
 
-    // Check if taken
     const { data: existing } = await supabaseAdmin
       .from('portfolios')
       .select('username')
@@ -36,21 +34,20 @@ export async function POST(request) {
       return Response.json({ error: 'Username already taken.' }, { status: 409 });
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Handle photo — store in Supabase Storage if provided
     let photoUrl = null;
     if (photo && photo.startsWith('data:image')) {
       const base64Data = photo.split(',')[1];
       const mimeType = photo.split(';')[0].split(':')[1];
-      const ext = mimeType.split('/')[1];
-      const fileName = `${u}/photo.${ext}`;
+      const ext = mimeType.split('/')[1] || 'jpg';
+      // Use timestamp in filename to guarantee unique URL — busts CDN cache
+      const fileName = `${u}/photo_${Date.now()}.${ext}`;
       const buffer = Buffer.from(base64Data, 'base64');
 
       const { error: uploadError } = await supabaseAdmin.storage
         .from('portfolio-photos')
-        .upload(fileName, buffer, { contentType: mimeType, upsert: true });
+        .upload(fileName, buffer, { contentType: mimeType, upsert: false });
 
       if (!uploadError) {
         const { data: urlData } = supabaseAdmin.storage
@@ -60,7 +57,6 @@ export async function POST(request) {
       }
     }
 
-    // Save to database
     const { error } = await supabaseAdmin.from('portfolios').insert({
       username: u,
       password_hash: passwordHash,
