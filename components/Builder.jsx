@@ -150,39 +150,7 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
   const updTag=(pi,ti,v)=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:pr.tags.map((t,k)=>k===ti?v:t)})}));
   const addTag=pi=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:[...pr.tags,""]})}));
   const rmTag=(pi,ti)=>setD(p=>({...p,projects:p.projects.map((pr,j)=>j!==pi?pr:{...pr,tags:pr.tags.filter((_,k)=>k!==ti)})}));
-  const handlePhoto=e=>{
-    const f=e.target.files[0];
-    if(!f)return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const img=new Image();
-      img.onload=()=>{
-        // Compress to max 40KB using canvas
-        const MAX_BYTES=40*1024;
-        const canvas=document.createElement('canvas');
-        // Resize to max 500x500 keeping aspect ratio
-        let w=img.width, h=img.height;
-        const maxDim=500;
-        if(w>maxDim||h>maxDim){
-          if(w>h){h=Math.round(h*maxDim/w);w=maxDim;}
-          else{w=Math.round(w*maxDim/h);h=maxDim;}
-        }
-        canvas.width=w; canvas.height=h;
-        const ctx=canvas.getContext('2d');
-        ctx.drawImage(img,0,0,w,h);
-        // Try decreasing quality until under 40KB
-        let quality=0.85;
-        let dataUrl=canvas.toDataURL('image/jpeg',quality);
-        while(dataUrl.length*0.75>MAX_BYTES&&quality>0.1){
-          quality-=0.05;
-          dataUrl=canvas.toDataURL('image/jpeg',quality);
-        }
-        setPhoto(dataUrl);
-      };
-      img.src=ev.target.result;
-    };
-    reader.readAsDataURL(f);
-  };
+  const handlePhoto=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setPhoto(ev.target.result);r.readAsDataURL(f);};
   // download replaced by publish modal
 function buildPdfHtml(d){
   const e=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -427,34 +395,76 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
         onSuccess={handlePublishSuccess}
       />
     )}
-    <div style={{height:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',sans-serif",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <style>{`
+      @media (max-width: 768px) {
+        .builder-root { height: auto !important; min-height: 100vh; overflow: auto !important; }
+        .builder-topbar { padding: 8px 12px !important; flex-wrap: wrap; gap: 6px !important; }
+        .builder-live-badge { display: none !important; }
+        .builder-theme-indicator { display: none !important; }
+        .builder-pdf-btn { padding: 7px 10px !important; font-size: 0.74rem !important; }
+        .builder-pdf-btn .pdf-label { display: none; }
+        .builder-publish-btn { padding: 7px 12px !important; font-size: 0.74rem !important; }
+        .builder-body { flex-direction: column !important; overflow: visible !important; height: auto !important; }
+        .builder-sidebar {
+          width: 100% !important;
+          flex-direction: row !important;
+          overflow-x: auto !important;
+          overflow-y: hidden !important;
+          border-right: none !important;
+          border-bottom: 1px solid #30363d !important;
+          padding: 6px 8px !important;
+          gap: 4px !important;
+          flex-shrink: 0 !important;
+          scrollbar-width: none !important;
+        }
+        .builder-sidebar::-webkit-scrollbar { display: none; }
+        .builder-tab-btn {
+          flex-direction: row !important;
+          gap: 5px !important;
+          padding: 7px 10px !important;
+          border-left: none !important;
+          border-bottom: 2px solid transparent !important;
+          flex-shrink: 0 !important;
+          white-space: nowrap !important;
+        }
+        .builder-tab-btn.active {
+          border-left: none !important;
+          border-bottom: 2px solid #0ea5e9 !important;
+        }
+        .builder-tab-icon { font-size: 0.9rem !important; }
+        .builder-tab-label { font-size: 0.62rem !important; }
+        .builder-form { flex: 1 1 auto !important; width: 100% !important; border-right: none !important; padding: 16px 14px !important; min-height: 0 !important; overflow-y: visible !important; }
+        .builder-preview { display: none !important; }
+      }
+    `}</style>
+    <div className="builder-root" style={{height:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',sans-serif",display:"flex",flexDirection:"column",overflow:"hidden"}}>
       {/* TOP BAR */}
-      <div style={{background:C.surf,borderBottom:`1px solid ${C.border}`,padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,gap:10}}>
+      <div className="builder-topbar" style={{background:C.surf,borderBottom:`1px solid ${C.border}`,padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontFamily:"'JetBrains Mono',monospace",color:C.accent,fontSize:"0.88rem",fontWeight:600}}>&lt;portfolio-builder /&gt;</span>
-          <span style={{fontSize:"0.66rem",color:C.muted,background:C.surf2,padding:"2px 8px",borderRadius:4,border:`1px solid ${C.border}`}}>LIVE EDITOR</span>
+          <span className="builder-live-badge" style={{fontSize:"0.66rem",color:C.muted,background:C.surf2,padding:"2px 8px",borderRadius:4,border:`1px solid ${C.border}`}}>LIVE EDITOR</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginLeft:"auto"}}>
+        <div className="builder-theme-indicator" style={{display:"flex",alignItems:"center",gap:8,marginLeft:"auto"}}>
           <div style={{width:12,height:12,borderRadius:"50%",background:curTheme.accent,boxShadow:`0 0 6px ${curTheme.accent}`}}/>
           <span style={{fontSize:"0.72rem",color:C.muted}}>{curTheme.name}</span>
         </div>
-        <button onClick={downloadPDF} style={{display:"flex",alignItems:"center",gap:7,padding:"9px 18px",borderRadius:8,background:"transparent",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer",fontWeight:600,fontSize:"0.82rem",flexShrink:0}} onMouseOver={e=>e.currentTarget.style.borderColor=C.accent} onMouseOut={e=>e.currentTarget.style.borderColor=C.border}>
-          📄 Download PDF
+        <button className="builder-pdf-btn" onClick={downloadPDF} style={{display:"flex",alignItems:"center",gap:7,padding:"9px 18px",borderRadius:8,background:"transparent",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer",fontWeight:600,fontSize:"0.82rem",flexShrink:0}} onMouseOver={e=>e.currentTarget.style.borderColor=C.accent} onMouseOut={e=>e.currentTarget.style.borderColor=C.border}>
+          📄 <span className="pdf-label">Download PDF</span>
         </button>
-        <button onClick={()=>setShowPublish(true)} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 20px",borderRadius:8,background:done?"#22c55e":C.accent,border:"none",color:"#000",cursor:"pointer",fontWeight:700,fontSize:"0.82rem",transition:"background 0.3s",flexShrink:0}}>
+        <button className="builder-publish-btn" onClick={()=>setShowPublish(true)} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 20px",borderRadius:8,background:done?"#22c55e":C.accent,border:"none",color:"#000",cursor:"pointer",fontWeight:700,fontSize:"0.82rem",transition:"background 0.3s",flexShrink:0}}>
           {editMode ? "💾 Save Changes" : done ? "✓ Published!" : "🚀 Publish Website"}
         </button>
       </div>
-      <div style={{display:"flex",flex:1,overflow:"hidden"}}>
+      <div className="builder-body" style={{display:"flex",flex:1,overflow:"hidden"}}>
         {/* SIDEBAR */}
-        <div style={{width:112,background:C.surf,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",gap:2,padding:8,flexShrink:0,overflowY:"auto"}}>
-          {TABS.map(t=>(<button key={t.id} onClick={()=>setTab(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 4px",borderRadius:8,border:"none",cursor:"pointer",background:tab===t.id?C.surf2:"transparent",color:tab===t.id?C.accent:C.muted,borderLeft:tab===t.id?`2px solid ${C.accent}`:"2px solid transparent",transition:"all 0.15s"}}>
-            <span style={{fontSize:"1.05rem"}}>{t.icon}</span>
-            <span style={{fontSize:"0.58rem",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{t.label}</span>
+        <div className="builder-sidebar" style={{width:112,background:C.surf,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",gap:2,padding:8,flexShrink:0,overflowY:"auto"}}>
+          {TABS.map(t=>(<button key={t.id} onClick={()=>setTab(t.id)} className={`builder-tab-btn${tab===t.id?" active":""}`} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 4px",borderRadius:8,border:"none",cursor:"pointer",background:tab===t.id?C.surf2:"transparent",color:tab===t.id?C.accent:C.muted,borderLeft:tab===t.id?`2px solid ${C.accent}`:"2px solid transparent",transition:"all 0.15s"}}>
+            <span className="builder-tab-icon" style={{fontSize:"1.05rem"}}>{t.icon}</span>
+            <span className="builder-tab-label" style={{fontSize:"0.58rem",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em"}}>{t.label}</span>
           </button>))}
         </div>
         {/* FORM PANEL */}
-        <div style={{flex:"0 0 400px",overflowY:"auto",padding:"20px 22px",borderRight:`1px solid ${C.border}`}}>
+        <div className="builder-form" style={{flex:"0 0 400px",overflowY:"auto",padding:"20px 22px",borderRight:`1px solid ${C.border}`}}>
           <div style={{marginBottom:16}}>
             <h2 style={{fontSize:"0.96rem",fontWeight:700,color:C.text,marginBottom:4}}>{TABS.find(t=>t.id===tab)?.icon}&nbsp;{TABS.find(t=>t.id===tab)?.label}</h2>
             <p style={{fontSize:"0.72rem",color:C.muted,lineHeight:1.5}}>{TAB_DESC[tab]}</p>
@@ -462,7 +472,7 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
           {panels[tab]}
         </div>
         {/* LIVE PREVIEW */}
-        <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div className="builder-preview" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
           <div style={{padding:"8px 14px",background:C.surf,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
             <div style={{display:"flex",gap:5}}>{["#f87171","#fbbf24","#22c55e"].map(col=><span key={col} style={{width:10,height:10,borderRadius:"50%",background:col,display:"inline-block"}}/>)}</div>
             <span style={{fontSize:"0.7rem",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>live preview</span>
