@@ -25,8 +25,13 @@ export const metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230ea5e9'/><text x='16' y='22' text-anchor='middle' font-family='monospace' font-weight='bold' font-size='16' fill='white'>&lt;/&gt;</text></svg>",
-  },
+  icon: [
+    { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+  ],
+  apple: "/apple-touch-icon.png",
+},
 };
 
 export default function RootLayout({ children }) {
