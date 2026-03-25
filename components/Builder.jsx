@@ -182,11 +182,11 @@ h1{font-size:21pt;font-weight:700;letter-spacing:-0.02em;margin-bottom:3pt;}
 <div class="contacts">${d.email?`<span>✉ ${e(d.email)}</span>`:""}${d.phone?`<span>✆ ${e(d.phone)}</span>`:""}${d.location?`<span>⌂ ${e(d.location)}</span>`:""}${lh?`<span>🔗 ${e(lh)}</span>`:""}</div>
 ${d.bio?`<div class="sec"><div class="sh">Professional Summary</div><p style="font-size:9.5pt;color:#333;line-height:1.6;">${e(d.bio)}</p></div>`:""}
 ${d.education?.length?`<div class="sec"><div class="sh">Education</div>${d.education.map(x=>`<div style="margin-bottom:8pt;"><div class="row"><span class="t">${e(x.degree)}</span><span class="d">${e(x.year)}</span></div><div class="s">${e(x.institution)}${x.badge?` &nbsp;<span style="background:#f0f0f0;padding:1pt 7pt;border-radius:3pt;font-size:8.5pt;">${e(x.badge)}</span>`:""}</div></div>`).join("")}</div>`:""}
-${d.experience?.length?`<div class="sec"><div class="sh">Experience</div>${d.experience.map(x=>`<div style="margin-bottom:8pt;"><div class="row"><span class="t">${e(x.title)}</span><span class="d">${e(x.year)}</span></div><div class="s">${e(x.company)}</div>${x.bullets?.length?`<ul class="bul">${x.bullets.map(b=>`<li>${e(b)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>`:""}
-${d.projects?.length?`<div class="sec"><div class="sh">Projects</div>${d.projects.map(x=>`<div style="margin-bottom:9pt;"><div class="row"><span class="t">${e(x.name)}</span><span class="d">${e(x.year)}</span></div><p style="font-size:9.5pt;color:#333;margin-top:3pt;line-height:1.5;">${e(x.desc)}</p>${x.tags?.length?`<div style="margin-top:4pt;">${x.tags.map(t=>`<span class="tag">${e(t)}</span>`).join("")}</div>`:""}</div>`).join("")}</div>`:""}
-${d.certifications?.length?`<div class="sec"><div class="sh">Certifications</div>${d.certifications.map(x=>`<div class="cert"><span><span class="cert-l">${e(x.name)}</span>${x.issuer?`<span class="cert-i">— ${e(x.issuer)}</span>`:""}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
-${d.achievements?.length?`<div class="sec"><div class="sh">Achievements &amp; Recognition</div>${d.achievements.map(x=>`<div class="ach"><span>${x.icon} ${e(x.text)}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
-${d.leadership?.length?`<div class="sec"><div class="sh">Leadership &amp; Extracurricular</div>${d.leadership.map(x=>`<div style="margin-bottom:6pt;"><div class="row"><span class="t">${e(x.role)}</span><span class="d">${e(x.date)}</span></div><div class="s">${e(x.org)}</div></div>`).join("")}</div>`:""}
+${d.experience?.length&&d.showExperience!==false?`<div class="sec"><div class="sh">Experience</div>${d.experience.map(x=>`<div style="margin-bottom:8pt;"><div class="row"><span class="t">${e(x.title)}</span><span class="d">${e(x.year)}</span></div><div class="s">${e(x.company)}</div>${x.bullets?.length?`<ul class="bul">${x.bullets.map(b=>`<li>${e(b)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>`:""}
+${d.projects?.length&&d.showProjects!==false?`<div class="sec"><div class="sh">Projects</div>${d.projects.map(x=>`<div style="margin-bottom:9pt;"><div class="row"><span class="t">${e(x.name)}</span><span class="d">${e(x.year)}</span></div><p style="font-size:9.5pt;color:#333;margin-top:3pt;line-height:1.5;">${e(x.desc)}</p>${x.tags?.length?`<div style="margin-top:4pt;">${x.tags.map(t=>`<span class="tag">${e(t)}</span>`).join("")}</div>`:""}</div>`).join("")}</div>`:""}
+${d.certifications?.length&&d.showCertifications!==false?`<div class="sec"><div class="sh">Certifications</div>${d.certifications.map(x=>`<div class="cert"><span><span class="cert-l">${e(x.name)}</span>${x.issuer?`<span class="cert-i">— ${e(x.issuer)}</span>`:""}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
+${d.achievements?.length&&d.showAchievements!==false?`<div class="sec"><div class="sh">Achievements &amp; Recognition</div>${d.achievements.map(x=>`<div class="ach"><span>${x.icon} ${e(x.text)}</span><b>${e(x.year)}</b></div>`).join("")}</div>`:""}
+${d.leadership?.length&&d.showLeadership!==false?`<div class="sec"><div class="sh">Leadership &amp; Extracurricular</div>${d.leadership.map(x=>`<div style="margin-bottom:6pt;"><div class="row"><span class="t">${e(x.role)}</span><span class="d">${e(x.date)}</span></div><div class="s">${e(x.org)}</div></div>`).join("")}</div>`:""}
 ${d.skillGroups?.length?`<div class="sec"><div class="sh">Skills &amp; Technologies</div>${d.skillGroups.map(g=>`<div class="sk"><b>${e(g.label)}: </b><span>${g.skills.map(s=>e(s)).join(" · ")}</span></div>`).join("")}</div>`:""}
 ${d.references?.length?`<div class="sec"><div class="sh">References</div><div class="rg">${d.references.map(r=>`<div class="ri"><b>${e(r.name)}</b><i>${r.role.split("\\n").map(l=>e(l)).join("<br>")}</i><p>✆ ${e(r.phone)}</p><p>✉ ${e(r.email)}</p></div>`).join("")}</div></div>`:""}
 <script>window.onload=function(){window.print();}<\/script>
@@ -299,6 +299,12 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
       <WBtn label="+ Add Education" onClick={()=>addArr("education",{year:"",degree:"",institution:"",badge:""})}/>
     </div>),
     experience:(<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,cursor:"pointer",padding:"10px 14px",background:C.surf,border:`1px solid ${C.border}`,borderRadius:8}} onClick={()=>upd("showExperience",d.showExperience===false)}>
+        <div style={{width:36,height:20,borderRadius:10,background:d.showExperience!==false?C.accent:C.surf2,border:`1px solid ${d.showExperience!==false?C.accent:C.border}`,position:"relative",transition:"background 0.2s",flexShrink:0}}>
+          <div style={{position:"absolute",top:3,left:d.showExperience!==false?18:3,width:12,height:12,borderRadius:"50%",background:d.showExperience!==false?"#000":C.muted,transition:"left 0.2s"}}/>
+        </div>
+        <span style={{fontSize:"0.78rem",color:d.showExperience!==false?C.accent:C.muted,fontWeight:600}}>{d.showExperience!==false?"Show Experience in portfolio & PDF":"Experience hidden from portfolio & PDF"}</span>
+      </div>
       {d.experience.map((e,i)=>(<SCard key={i}>
         <CardHdr label={`Experience ${i+1}`} onUp={i>0?()=>mvArr("experience",i,-1):null} onDown={i<d.experience.length-1?()=>mvArr("experience",i,1):null} onRemove={()=>rmArr("experience",i)}/>
         <G2><Field label="Year / Period" value={e.year} onChange={v=>updArr("experience",i,"year",v)} placeholder="2023 – Present"/><Field label="Job Title" value={e.title} onChange={v=>updArr("experience",i,"title",v)}/></G2>
@@ -315,6 +321,12 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
       <WBtn label="+ Add Experience" onClick={()=>addArr("experience",{year:"",title:"",company:"",link:"",bullets:[""]})}/>
     </div>),
     projects:(<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,cursor:"pointer",padding:"10px 14px",background:C.surf,border:`1px solid ${C.border}`,borderRadius:8}} onClick={()=>upd("showProjects",d.showProjects===false)}>
+        <div style={{width:36,height:20,borderRadius:10,background:d.showProjects!==false?C.accent:C.surf2,border:`1px solid ${d.showProjects!==false?C.accent:C.border}`,position:"relative",transition:"background 0.2s",flexShrink:0}}>
+          <div style={{position:"absolute",top:3,left:d.showProjects!==false?18:3,width:12,height:12,borderRadius:"50%",background:d.showProjects!==false?"#000":C.muted,transition:"left 0.2s"}}/>
+        </div>
+        <span style={{fontSize:"0.78rem",color:d.showProjects!==false?C.accent:C.muted,fontWeight:600}}>{d.showProjects!==false?"Show Projects in portfolio & PDF":"Projects hidden from portfolio & PDF"}</span>
+      </div>
       {d.projects.map((p,pi)=>(<SCard key={pi}>
         <CardHdr label={`Project ${pi+1}`} onUp={pi>0?()=>mvArr("projects",pi,-1):null} onDown={pi<d.projects.length-1?()=>mvArr("projects",pi,1):null} onRemove={()=>rmArr("projects",pi)}/>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,cursor:"pointer"}} onClick={()=>updArr("projects",pi,"featured",!p.featured)}>
@@ -339,6 +351,12 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
       <WBtn label="+ Add Project" onClick={()=>addArr("projects",{featured:false,year:"",name:"",link:"",desc:"",tags:[]})}/>
     </div>),
     achievements:(<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,cursor:"pointer",padding:"10px 14px",background:C.surf,border:`1px solid ${C.border}`,borderRadius:8}} onClick={()=>upd("showAchievements",d.showAchievements===false)}>
+        <div style={{width:36,height:20,borderRadius:10,background:d.showAchievements!==false?C.accent:C.surf2,border:`1px solid ${d.showAchievements!==false?C.accent:C.border}`,position:"relative",transition:"background 0.2s",flexShrink:0}}>
+          <div style={{position:"absolute",top:3,left:d.showAchievements!==false?18:3,width:12,height:12,borderRadius:"50%",background:d.showAchievements!==false?"#000":C.muted,transition:"left 0.2s"}}/>
+        </div>
+        <span style={{fontSize:"0.78rem",color:d.showAchievements!==false?C.accent:C.muted,fontWeight:600}}>{d.showAchievements!==false?"Show Awards in portfolio & PDF":"Awards hidden from portfolio & PDF"}</span>
+      </div>
       {d.achievements.map((a,i)=>(<SCard key={i}>
         <CardHdr label={`Achievement ${i+1}`} onUp={i>0?()=>mvArr("achievements",i,-1):null} onDown={i<d.achievements.length-1?()=>mvArr("achievements",i,1):null} onRemove={()=>rmArr("achievements",i)}/>
         <G2><Field label="Icon (emoji)" value={a.icon} onChange={v=>updArr("achievements",i,"icon",v)} placeholder="🏆"/><Field label="Year" value={a.year} onChange={v=>updArr("achievements",i,"year",v)} placeholder="2024"/></G2>
@@ -348,6 +366,12 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
       <WBtn label="+ Add Achievement" onClick={()=>addArr("achievements",{icon:"🏅",text:"",link:"",year:""})}/>
     </div>),
     certifications:(<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,cursor:"pointer",padding:"10px 14px",background:C.surf,border:`1px solid ${C.border}`,borderRadius:8}} onClick={()=>upd("showCertifications",d.showCertifications===false)}>
+        <div style={{width:36,height:20,borderRadius:10,background:d.showCertifications!==false?C.accent:C.surf2,border:`1px solid ${d.showCertifications!==false?C.accent:C.border}`,position:"relative",transition:"background 0.2s",flexShrink:0}}>
+          <div style={{position:"absolute",top:3,left:d.showCertifications!==false?18:3,width:12,height:12,borderRadius:"50%",background:d.showCertifications!==false?"#000":C.muted,transition:"left 0.2s"}}/>
+        </div>
+        <span style={{fontSize:"0.78rem",color:d.showCertifications!==false?C.accent:C.muted,fontWeight:600}}>{d.showCertifications!==false?"Show Certifications in portfolio & PDF":"Certifications hidden from portfolio & PDF"}</span>
+      </div>
       <p style={{fontSize:"0.72rem",color:C.muted,marginBottom:14,lineHeight:1.6}}>Add courses, licences and professional certificates. The verify link makes the title clickable on the portfolio.</p>
       {d.certifications.map((c,i)=>(<SCard key={i}>
         <CardHdr label={`Certification ${i+1}`} onUp={i>0?()=>mvArr("certifications",i,-1):null} onDown={i<d.certifications.length-1?()=>mvArr("certifications",i,1):null} onRemove={()=>rmArr("certifications",i)}/>
@@ -358,6 +382,12 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
       <WBtn label="+ Add Certification" onClick={()=>addArr("certifications",{name:"",issuer:"",year:"",link:""})}/>
     </div>),
     leadership:(<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,cursor:"pointer",padding:"10px 14px",background:C.surf,border:`1px solid ${C.border}`,borderRadius:8}} onClick={()=>upd("showLeadership",d.showLeadership===false)}>
+        <div style={{width:36,height:20,borderRadius:10,background:d.showLeadership!==false?C.accent:C.surf2,border:`1px solid ${d.showLeadership!==false?C.accent:C.border}`,position:"relative",transition:"background 0.2s",flexShrink:0}}>
+          <div style={{position:"absolute",top:3,left:d.showLeadership!==false?18:3,width:12,height:12,borderRadius:"50%",background:d.showLeadership!==false?"#000":C.muted,transition:"left 0.2s"}}/>
+        </div>
+        <span style={{fontSize:"0.78rem",color:d.showLeadership!==false?C.accent:C.muted,fontWeight:600}}>{d.showLeadership!==false?"Show Leadership in portfolio & PDF":"Leadership hidden from portfolio & PDF"}</span>
+      </div>
       {d.leadership.map((l,i)=>(<SCard key={i}>
         <CardHdr label={`Role ${i+1}`} onUp={i>0?()=>mvArr("leadership",i,-1):null} onDown={i<d.leadership.length-1?()=>mvArr("leadership",i,1):null} onRemove={()=>rmArr("leadership",i)}/>
         <G2><Field label="Role / Title" value={l.role} onChange={v=>updArr("leadership",i,"role",v)} placeholder="Co-Founder"/><Field label="Date / Period" value={l.date} onChange={v=>updArr("leadership",i,"date",v)} placeholder="2023 – Present"/></G2>
