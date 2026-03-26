@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const router = useRouter();
   const [openMenu, setOpenMenu] = useState(null);
+  const [dropdownPos, setDropdownPos] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
@@ -40,18 +41,30 @@ export default function Home() {
 
   useEffect(() => {
     if (!openMenu) return;
-    const handle = () => setOpenMenu(null);
+    const handle = () => { setOpenMenu(null); setDropdownPos(null); };
     document.addEventListener('click', handle);
     return () => document.removeEventListener('click', handle);
   }, [openMenu]);
 
-  const menuDropdown = (id) => openMenu === id ? (
+  const openDropdown = (id, e) => {
+    e.stopPropagation();
+    if (openMenu === id) {
+      setOpenMenu(null);
+      setDropdownPos(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    setOpenMenu(id);
+  };
+
+  const menuDropdown = (id) => openMenu === id && dropdownPos !== null ? (
     <div
       onClick={e => e.stopPropagation()}
-      style={{position:'absolute',top:'calc(100% + 8px)',right:0,background:'#161b22',border:'1px solid #30363d',borderRadius:10,minWidth:260,zIndex:999,boxShadow:'0 8px 30px rgba(0,0,0,0.55)',overflow:'hidden'}}
+      style={{position:'fixed',top:dropdownPos.top,right:dropdownPos.right,background:'#161b22',border:'1px solid #30363d',borderRadius:10,minWidth:260,zIndex:9999,boxShadow:'0 8px 30px rgba(0,0,0,0.55)',overflow:'hidden'}}
     >
       <button
-        onClick={() => { setOpenMenu(null); router.push('/portfolio'); }}
+        onClick={() => { setOpenMenu(null); setDropdownPos(null); router.push('/portfolio'); }}
         style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
         onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
         onMouseLeave={e=>e.currentTarget.style.background='none'}
@@ -60,7 +73,7 @@ export default function Home() {
         <div style={{fontSize:'0.72rem',color:'#8b949e',fontWeight:400,marginTop:3}}>Create a brand-new portfolio</div>
       </button>
       <button
-        onClick={() => { setOpenMenu(null); setShowLoginModal(true); }}
+        onClick={() => { setOpenMenu(null); setDropdownPos(null); setShowLoginModal(true); }}
         style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
         onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
         onMouseLeave={e=>e.currentTarget.style.background='none'}
@@ -551,7 +564,7 @@ export default function Home() {
       <nav>
         <span className="nav-brand">&lt;boundforthetop /&gt;</span>
         <div style={{position:'relative',display:'inline-block'}}>
-          <button className="nav-cta" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='nav'?null:'nav');}}>
+          <button className="nav-cta" onClick={e=>openDropdown('nav',e)}>
             Build Your Portfolio →
           </button>
           {menuDropdown('nav')}
@@ -571,7 +584,7 @@ export default function Home() {
         </p>
         <div className="hero-actions">
           <div style={{position:'relative',display:'inline-block'}}>
-            <button className="btn-primary" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='hero'?null:'hero');}}>
+            <button className="btn-primary" onClick={e=>openDropdown('hero',e)}>
               Build Your Portfolio →
             </button>
             {menuDropdown('hero')}
@@ -673,7 +686,7 @@ export default function Home() {
           <div className="cta-title">Ready to go live?</div>
           <p className="cta-sub">Free forever. No account needed. Just fill in and publish.</p>
           <div style={{position:'relative',display:'inline-block'}}>
-            <button className="btn-primary" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='cta'?null:'cta');}}>
+            <button className="btn-primary" onClick={e=>openDropdown('cta',e)}>
               Build Your Portfolio →
             </button>
             {menuDropdown('cta')}
