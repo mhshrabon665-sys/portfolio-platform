@@ -1,299 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-// ─── Existing-user login modal ────────────────────────────────────────────────
-function ExistingUserModal({ onClose }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const res = await fetch('/api/verify-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim().toLowerCase(), password }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || 'Incorrect username or password.'); setLoading(false); return; }
-      // Persist session so the edit page doesn't re-ask for the password
-      try {
-        sessionStorage.setItem(
-          `edit_${username.trim().toLowerCase()}`,
-          JSON.stringify({ ...data, password, ts: Date.now() })
-        );
-      } catch (_) {}
-      window.location.href = `/${username.trim().toLowerCase()}/edit`;
-    } catch {
-      setError('Connection error. Please try again.');
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-        zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-      }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        background: '#161b22', border: '1px solid #30363d', borderRadius: 12,
-        padding: '32px 36px', width: '100%', maxWidth: 400, fontFamily: 'Inter,sans-serif',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div>
-            <div style={{ fontFamily: 'IBM Plex Mono,monospace', color: '#0ea5e9', fontSize: '0.82rem', marginBottom: 4 }}>
-              {'<edit-portfolio />'}
-            </div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#e6edf3', margin: 0 }}>
-              Welcome back
-            </h2>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>✕</button>
-        </div>
-
-        <p style={{ fontSize: '0.78rem', color: '#8b949e', marginBottom: 20, lineHeight: 1.6 }}>
-          Enter your portfolio username and password to open the editor.
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: '0.68rem', color: '#8b949e', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Username
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              placeholder="your-username"
-              autoFocus
-              required
-              style={{
-                width: '100%', padding: '10px 14px', background: '#21262d',
-                border: '1px solid #30363d', borderRadius: 8, color: '#e6edf3',
-                fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
-              }}
-            />
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: '0.68rem', color: '#8b949e', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Your portfolio password"
-              required
-              style={{
-                width: '100%', padding: '10px 14px', background: '#21262d',
-                border: '1px solid #30363d', borderRadius: 8, color: '#e6edf3',
-                fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          {error && (
-            <p style={{ fontSize: '0.76rem', color: '#f87171', marginBottom: 12, padding: '8px 12px', background: 'rgba(248,113,113,0.1)', borderRadius: 6, border: '1px solid rgba(248,113,113,0.25)' }}>
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !username || !password}
-            style={{
-              width: '100%', padding: '12px', borderRadius: 8,
-              background: loading ? '#21262d' : '#0ea5e9',
-              border: 'none', color: '#000', fontWeight: 700, fontSize: '0.9rem',
-              cursor: loading || !username || !password ? 'not-allowed' : 'pointer',
-              opacity: !username || !password ? 0.5 : 1, transition: 'background 0.2s',
-            }}
-          >
-            {loading ? 'Verifying…' : '🔓 Open My Editor'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ─── EDIT TIP MODAL ───────────────────────────────────────────────────────────
-function EditTipModal({ username, onDismiss }) {
-  const editUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${username}/edit`;
-  return (
-    <div style={{
-      position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',
-      zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:20,
-    }}>
-      <div style={{
-        background:'#161b22',border:'1px solid #30363d',borderRadius:14,
-        padding:'36px 32px',width:'100%',maxWidth:420,
-        fontFamily:'Inter,sans-serif',textAlign:'center',
-        animation:'editTipIn 0.35s cubic-bezier(0.22,1,0.36,1) both',
-      }}>
-        <style>{`@keyframes editTipIn{from{opacity:0;transform:scale(0.88) translateY(16px);}to{opacity:1;transform:scale(1) translateY(0);}}`}</style>
-
-        {/* Edit icon illustration */}
-        <div style={{
-          width:64,height:64,borderRadius:14,
-          background:'rgba(14,165,233,0.12)',border:'1px solid rgba(14,165,233,0.3)',
-          display:'flex',alignItems:'center',justifyContent:'center',
-          margin:'0 auto 20px',
-        }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </div>
-
-        <h2 style={{fontSize:'1.15rem',fontWeight:700,color:'#e6edf3',marginBottom:10,letterSpacing:'-0.01em'}}>
-          One thing before you go!
-        </h2>
-
-        <p style={{fontSize:'0.84rem',color:'#8b949e',lineHeight:1.7,marginBottom:8}}>
-          You can always come back and edit your portfolio by tapping the
-        </p>
-
-        {/* Replica of the footer edit button */}
-        <div style={{display:'inline-flex',alignItems:'center',gap:8,margin:'2px 0 10px',padding:'5px 12px',borderRadius:7,border:'1px solid rgba(14,165,233,0.4)',background:'rgba(14,165,233,0.07)'}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          <span style={{fontSize:'0.72rem',color:'#0ea5e9',fontWeight:600}}>edit</span>
-        </div>
-
-        <p style={{fontSize:'0.84rem',color:'#8b949e',lineHeight:1.7,marginBottom:4}}>
-          icon at the footer of your live portfolio page.
-        </p>
-
-        <p style={{fontSize:'0.76rem',color:'#8b949e',marginBottom:24,lineHeight:1.6}}>
-          Or go directly to{' '}
-          <span style={{fontFamily:'JetBrains Mono,monospace',color:'#0ea5e9',fontSize:'0.72rem',wordBreak:'break-all'}}>
-            {editUrl}
-          </span>
-        </p>
-
-        <button
-          onClick={onDismiss}
-          style={{
-            width:'100%',padding:'12px',borderRadius:8,
-            background:'#0ea5e9',border:'none',color:'#000',
-            fontWeight:700,fontSize:'0.9rem',cursor:'pointer',
-            transition:'opacity 0.2s',fontFamily:'inherit',
-          }}
-          onMouseOver={e=>e.currentTarget.style.opacity='0.88'}
-          onMouseOut={e=>e.currentTarget.style.opacity='1'}
-        >
-          Got it — show me my portfolio 🎉
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Nav CTA with dropdown ────────────────────────────────────────────────────
-function NavCTA() {
-  const [open, setOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const ref = useRef(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handler(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  return (
-    <>
-      <div ref={ref} style={{ position: 'relative' }}>
-        <button
-          onClick={() => setOpen(o => !o)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '8px 18px', borderRadius: 8, background: '#0ea5e9',
-            color: '#000', fontSize: '0.78rem', fontWeight: 700,
-            border: 'none', cursor: 'pointer', transition: 'opacity 0.2s',
-            fontFamily: 'inherit',
-          }}
-          onMouseOver={e => e.currentTarget.style.opacity = '0.88'}
-          onMouseOut={e => e.currentTarget.style.opacity = '1'}
-        >
-          Portfolio →
-          <span style={{
-            display: 'inline-block', marginLeft: 2, fontSize: '0.6rem',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s',
-          }}>▼</span>
-        </button>
-
-        {open && (
-          <div style={{
-            position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-            background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)', minWidth: 220, zIndex: 200,
-            overflow: 'hidden',
-          }}>
-            <Link
-              href="/portfolio"
-              onClick={() => setOpen(false)}
-              style={{
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '14px 16px', textDecoration: 'none', color: '#e6edf3',
-                transition: 'background 0.15s', borderBottom: '1px solid #21262d',
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#21262d'}
-              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>✨</span>
-              <div>
-                <div style={{ fontSize: '0.84rem', fontWeight: 700 }}>Build New Portfolio</div>
-                <div style={{ fontSize: '0.72rem', color: '#8b949e', marginTop: 2, lineHeight: 1.4 }}>
-                  Create yours — free, no account needed
-                </div>
-              </div>
-            </Link>
-
-            <button
-              onClick={() => { setOpen(false); setShowModal(true); }}
-              style={{
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '14px 16px', width: '100%', background: 'transparent',
-                border: 'none', color: '#e6edf3', cursor: 'pointer',
-                textAlign: 'left', transition: 'background 0.15s', fontFamily: 'inherit',
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#21262d'}
-              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>✏️</span>
-              <div>
-                <div style={{ fontSize: '0.84rem', fontWeight: 700 }}>Edit Existing Portfolio</div>
-                <div style={{ fontSize: '0.72rem', color: '#8b949e', marginTop: 2, lineHeight: 1.4 }}>
-                  Already have one? Sign in to edit
-                </div>
-              </div>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {showModal && <ExistingUserModal onClose={() => setShowModal(false)} />}
-    </>
-  );
-}
-
-// ─── Home page ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const router = useRouter();
+  const [openMenu, setOpenMenu] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   useEffect(() => {
     const phrases = [
       'no code needed',
@@ -324,6 +38,39 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!openMenu) return;
+    const handle = () => setOpenMenu(null);
+    document.addEventListener('click', handle);
+    return () => document.removeEventListener('click', handle);
+  }, [openMenu]);
+
+  const menuDropdown = (id) => openMenu === id ? (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{position:'absolute',top:'calc(100% + 8px)',right:0,background:'#161b22',border:'1px solid #30363d',borderRadius:10,minWidth:260,zIndex:999,boxShadow:'0 8px 30px rgba(0,0,0,0.55)',overflow:'hidden'}}
+    >
+      <button
+        onClick={() => { setOpenMenu(null); router.push('/portfolio'); }}
+        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
+        onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
+        onMouseLeave={e=>e.currentTarget.style.background='none'}
+      >
+        🆕 I&apos;m new here
+        <div style={{fontSize:'0.72rem',color:'#8b949e',fontWeight:400,marginTop:3}}>Create a brand-new portfolio</div>
+      </button>
+      <button
+        onClick={() => { setOpenMenu(null); setShowLoginModal(true); }}
+        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
+        onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
+        onMouseLeave={e=>e.currentTarget.style.background='none'}
+      >
+        🔑 I already have a portfolio
+        <div style={{fontSize:'0.72rem',color:'#8b949e',fontWeight:400,marginTop:3}}>Sign in to edit your existing one</div>
+      </button>
+    </div>
+  ) : null;
+
   return (
     <>
       <style>{`
@@ -353,6 +100,7 @@ export default function Home() {
           overflow-x: hidden;
         }
 
+        /* grid bg */
         body::before {
           content: '';
           position: fixed;
@@ -365,6 +113,7 @@ export default function Home() {
           z-index: 0;
         }
 
+        /* radial glow top */
         body::after {
           content: '';
           position: fixed;
@@ -378,6 +127,7 @@ export default function Home() {
           z-index: 0;
         }
 
+        /* ── NAV ── */
         nav {
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -401,6 +151,24 @@ export default function Home() {
           letter-spacing: -0.01em;
         }
 
+        .nav-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 18px;
+          border-radius: 8px;
+          background: var(--accent);
+          color: #000;
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-decoration: none;
+          letter-spacing: 0.01em;
+          transition: opacity 0.2s;
+        }
+        .nav-cta:hover { opacity: 0.88; }
+        button.nav-cta, button.btn-primary { border: none; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+        /* ── HERO ── */
         .hero {
           position: relative;
           z-index: 1;
@@ -514,6 +282,7 @@ export default function Home() {
         }
         .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
+        /* ── STATS ROW ── */
         .stats {
           position: relative; z-index: 1;
           display: flex;
@@ -553,6 +322,7 @@ export default function Home() {
           text-transform: uppercase;
         }
 
+        /* ── FEATURES ── */
         .section {
           position: relative; z-index: 1;
           max-width: 1000px;
@@ -597,10 +367,27 @@ export default function Home() {
           box-shadow: 0 0 24px rgba(14,165,233,0.07);
         }
 
-        .feat-icon { font-size: 1.6rem; margin-bottom: 16px; display: block; }
-        .feat-title { font-size: 0.98rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
-        .feat-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; font-weight: 400; }
+        .feat-icon {
+          font-size: 1.6rem;
+          margin-bottom: 16px;
+          display: block;
+        }
 
+        .feat-title {
+          font-size: 0.98rem;
+          font-weight: 700;
+          margin-bottom: 8px;
+          letter-spacing: -0.01em;
+        }
+
+        .feat-desc {
+          font-size: 0.8rem;
+          color: var(--muted);
+          line-height: 1.65;
+          font-weight: 400;
+        }
+
+        /* ── HOW IT WORKS ── */
         .steps {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -628,9 +415,21 @@ export default function Home() {
           line-height: 1;
         }
 
-        .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
-        .step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.65; font-weight: 400; }
+        .step-title {
+          font-size: 1rem;
+          font-weight: 700;
+          margin-bottom: 8px;
+          letter-spacing: -0.01em;
+        }
 
+        .step-desc {
+          font-size: 0.78rem;
+          color: var(--muted);
+          line-height: 1.65;
+          font-weight: 400;
+        }
+
+        /* ── THEMES STRIP ── */
         .themes-strip {
           display: flex;
           gap: 10px;
@@ -652,8 +451,14 @@ export default function Home() {
           font-family: 'IBM Plex Mono', monospace;
         }
 
-        .theme-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .theme-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
 
+        /* ── CTA BANNER ── */
         .cta-banner {
           position: relative; z-index: 1;
           max-width: 860px;
@@ -681,9 +486,21 @@ export default function Home() {
           pointer-events: none;
         }
 
-        .cta-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
-        .cta-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 32px; font-weight: 400; }
+        .cta-title {
+          font-size: clamp(1.6rem, 4vw, 2.4rem);
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          margin-bottom: 12px;
+        }
 
+        .cta-sub {
+          font-size: 0.9rem;
+          color: var(--muted);
+          margin-bottom: 32px;
+          font-weight: 400;
+        }
+
+        /* ── FOOTER ── */
         footer {
           position: relative; z-index: 1;
           border-top: 1px solid var(--border);
@@ -695,15 +512,28 @@ export default function Home() {
           gap: 10px;
         }
 
-        .footer-copy { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); }
-        .footer-link { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+        .footer-copy {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 0.72rem;
+          color: var(--muted);
+        }
+
+        .footer-link {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 0.72rem;
+          color: var(--muted);
+          text-decoration: none;
+          transition: color 0.15s;
+        }
         .footer-link:hover { color: var(--accent); }
 
+        /* ── ANIMATIONS ── */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
+        /* ── RESPONSIVE ── */
         @media (max-width: 700px) {
           nav { padding: 0 20px; }
           .features-grid, .steps { grid-template-columns: 1fr; }
@@ -720,7 +550,12 @@ export default function Home() {
       {/* NAV */}
       <nav>
         <span className="nav-brand">&lt;boundforthetop /&gt;</span>
-        <NavCTA />
+        <div style={{position:'relative',display:'inline-block'}}>
+          <button className="nav-cta" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='nav'?null:'nav');}}>
+            Build Your Portfolio →
+          </button>
+          {menuDropdown('nav')}
+        </div>
       </nav>
 
       {/* HERO */}
@@ -735,7 +570,12 @@ export default function Home() {
           Fill in your details, pick a theme, hit publish. Get a real URL you can share with anyone — instantly.
         </p>
         <div className="hero-actions">
-          <Link href="/portfolio" className="btn-primary">Build Your Portfolio →</Link>
+          <div style={{position:'relative',display:'inline-block'}}>
+            <button className="btn-primary" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='hero'?null:'hero');}}>
+              Build Your Portfolio →
+            </button>
+            {menuDropdown('hero')}
+          </div>
           <a href="#how" className="btn-ghost">See how it works</a>
         </div>
         <p style={{marginTop:20,fontSize:'0.72rem',color:'var(--muted)',fontFamily:"'IBM Plex Mono',monospace",display:'flex',alignItems:'center',gap:6}}>
@@ -745,10 +585,22 @@ export default function Home() {
 
       {/* STATS */}
       <div className="stats" style={{position:'relative',zIndex:1,maxWidth:660,margin:'0 auto 80px',animation:'fadeUp 0.6s 0.4s ease both'}}>
-        <div className="stat"><div className="stat-num">8</div><div className="stat-label">Themes</div></div>
-        <div className="stat"><div className="stat-num">∞</div><div className="stat-label">Free Forever</div></div>
-        <div className="stat"><div className="stat-num">&lt;2m</div><div className="stat-label">To Publish</div></div>
-        <div className="stat"><div className="stat-num">PDF</div><div className="stat-label">CV Export</div></div>
+        <div className="stat">
+          <div className="stat-num">8</div>
+          <div className="stat-label">Themes</div>
+        </div>
+        <div className="stat">
+          <div className="stat-num">∞</div>
+          <div className="stat-label">Free Forever</div>
+        </div>
+        <div className="stat">
+          <div className="stat-num">&lt;2m</div>
+          <div className="stat-label">To Publish</div>
+        </div>
+        <div className="stat">
+          <div className="stat-num">PDF</div>
+          <div className="stat-label">CV Export</div>
+        </div>
       </div>
 
       {/* FEATURES */}
@@ -820,9 +672,12 @@ export default function Home() {
         <div className="cta-inner">
           <div className="cta-title">Ready to go live?</div>
           <p className="cta-sub">Free forever. No account needed. Just fill in and publish.</p>
-          <Link href="/portfolio" className="btn-primary" style={{display:'inline-flex'}}>
-            Build Your Portfolio →
-          </Link>
+          <div style={{position:'relative',display:'inline-block'}}>
+            <button className="btn-primary" onClick={e=>{e.stopPropagation();setOpenMenu(p=>p==='cta'?null:'cta');}}>
+              Build Your Portfolio →
+            </button>
+            {menuDropdown('cta')}
+          </div>
         </div>
       </div>
 
@@ -833,6 +688,90 @@ export default function Home() {
           <Link href="/portfolio" className="footer-link">Builder</Link>
         </div>
       </footer>
+
+      {showLoginModal && <HasPortfolioModal onClose={() => setShowLoginModal(false)} />}
+
     </>
+  );
+}
+
+function HasPortfolioModal({ onClose }) {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const uname = username.toLowerCase().trim();
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: uname, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Incorrect credentials.'); return; }
+      const session = { ...data, password, ts: Date.now() };
+      try { sessionStorage.setItem(`edit_${uname}`, JSON.stringify(session)); } catch(e) {}
+      router.push(`/${uname}/edit`);
+    } catch {
+      setError('Connection error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:20}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:'#161b22',border:'1px solid #30363d',borderRadius:12,padding:'32px 36px',width:'100%',maxWidth:400,fontFamily:'Inter,sans-serif'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <div>
+            <div style={{fontFamily:'JetBrains Mono,monospace',color:'#0ea5e9',fontSize:'0.82rem',marginBottom:4}}>&lt;sign-in /&gt;</div>
+            <h2 style={{fontSize:'1.1rem',fontWeight:700,color:'#e6edf3',margin:0}}>Access your portfolio</h2>
+          </div>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#8b949e',cursor:'pointer',fontSize:'1.2rem',lineHeight:1,padding:0}}>✕</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{marginBottom:14}}>
+            <label style={{display:'block',fontSize:'0.68rem',color:'#8b949e',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>Username</label>
+            <input
+              value={username}
+              onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''))}
+              placeholder="your-username"
+              style={{width:'100%',padding:'10px 14px',background:'#21262d',border:'1px solid #30363d',borderRadius:8,color:'#e6edf3',fontSize:'0.88rem',outline:'none',boxSizing:'border-box'}}
+              required
+              autoFocus
+            />
+          </div>
+          <div style={{marginBottom:16}}>
+            <label style={{display:'block',fontSize:'0.68rem',color:'#8b949e',marginBottom:6,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e=>setPassword(e.target.value)}
+              placeholder="Your portfolio password"
+              style={{width:'100%',padding:'10px 14px',background:'#21262d',border:'1px solid #30363d',borderRadius:8,color:'#e6edf3',fontSize:'0.88rem',outline:'none',boxSizing:'border-box'}}
+              required
+            />
+          </div>
+          {error && (
+            <p style={{fontSize:'0.76rem',color:'#f87171',marginBottom:12,padding:'8px 12px',background:'rgba(248,113,113,0.1)',borderRadius:6,border:'1px solid rgba(248,113,113,0.25)'}}>
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loading || !username || !password}
+            style={{width:'100%',padding:'12px',borderRadius:8,background:loading?'#21262d':'#0ea5e9',border:'none',color:'#000',fontWeight:700,fontSize:'0.9rem',cursor:loading||!username||!password?'not-allowed':'pointer',opacity:(!username||!password)?0.5:1,transition:'background 0.2s'}}
+          >
+            {loading ? 'Verifying…' : '🔓 Go to Editor'}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
