@@ -135,6 +135,7 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
   const[d,setD]=useState({...(initialData||INIT),heroSocials:(initialData?.heroSocials)||(INIT.heroSocials)||['linkedin','github','whatsapp']});const[tab,setTab]=useState("basic");const[photo,setPhoto]=useState(initialPhoto||null);
   const[done,setDone]=useState(false);const[showPublish,setShowPublish]=useState(false);
   const[published,setPublished]=useState(null);const[themeId,setThemeId]=useState(initialTheme||"ocean");const fileRef=useRef();
+  const[pendingPublishedUsername,setPendingPublishedUsername]=useState(null);const[showEditHint,setShowEditHint]=useState(false);
   const[isMobile,setIsMobile]=useState(false);
   useEffect(()=>{const check=()=>setIsMobile(window.innerWidth<=768);check();window.addEventListener('resize',check);return()=>window.removeEventListener('resize',check);},[]);
   const upd=(k,v)=>setD(p=>({...p,[k]:v}));
@@ -410,7 +411,14 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
   const handlePublishSuccess = (uname) => {
     setShowPublish(false);
     if (editMode && onPublished) { onPublished(); return; }
-    setPublished(uname);
+    setPendingPublishedUsername(uname);
+    setShowEditHint(true);
+  };
+
+  const handleEditHintClose = () => {
+    setShowEditHint(false);
+    setPublished(pendingPublishedUsername);
+    setPendingPublishedUsername(null);
   };
 
   if (published) {
@@ -426,6 +434,9 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
         onClose={() => setShowPublish(false)}
         onSuccess={handlePublishSuccess}
       />
+    )}
+    {showEditHint && (
+      <EditHintModal onClose={handleEditHintClose} />
     )}
     <div style={{height:isMobile?"auto":"100vh",minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',sans-serif",display:"flex",flexDirection:"column",overflow:isMobile?"auto":"hidden"}}>
       {/* TOP BAR */}
@@ -678,6 +689,39 @@ function PublishSuccess({ username, onEdit }) {
 
         <button onClick={onEdit} style={{padding:'10px 24px',borderRadius:8,background:'transparent',border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',fontSize:'0.82rem'}}>
           ✏️ Edit portfolio
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── EDIT HINT MODAL ─────────────────────────────────────────────────────────
+function EditHintModal({ onClose }) {
+  const overlay = { position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:20 };
+  const box = { background:C.surf,border:`1px solid ${C.border}`,borderRadius:12,padding:'32px 36px',width:'100%',maxWidth:420,fontFamily:'Inter,sans-serif',textAlign:'center' };
+
+  return (
+    <div style={overlay}>
+      <div style={box}>
+        <div style={{fontSize:'2.5rem',marginBottom:16}}>🎉</div>
+        <h2 style={{fontSize:'1.05rem',fontWeight:700,color:C.text,marginBottom:12}}>Your portfolio is published!</h2>
+        <p style={{fontSize:'0.88rem',color:C.muted,lineHeight:1.7,marginBottom:24}}>
+          Remember, you can always edit your profile by tapping the{' '}
+          <span style={{display:'inline-flex',alignItems:'center',verticalAlign:'middle',background:C.surf2,border:`1px solid ${C.border}`,borderRadius:6,padding:'3px 7px',margin:'0 3px'}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </span>
+          {' '}edit icon at the footer of your portfolio page.
+        </p>
+        <button
+          onClick={onClose}
+          style={{padding:'11px 32px',borderRadius:8,background:C.accent,border:'none',color:'#000',fontWeight:700,fontSize:'0.9rem',cursor:'pointer',transition:'opacity 0.2s'}}
+          onMouseOver={e=>e.currentTarget.style.opacity='0.88'}
+          onMouseOut={e=>e.currentTarget.style.opacity='1'}
+        >
+          Got it! 👍
         </button>
       </div>
     </div>
