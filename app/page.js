@@ -65,7 +65,7 @@ export default function Home() {
     >
       <button
         onClick={() => { setOpenMenu(null); setDropdownPos(null); router.push('/portfolio'); }}
-        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
+        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Inter,sans-serif'}}
         onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
         onMouseLeave={e=>e.currentTarget.style.background='none'}
       >
@@ -74,7 +74,7 @@ export default function Home() {
       </button>
       <button
         onClick={() => { setOpenMenu(null); setDropdownPos(null); setShowLoginModal(true); }}
-        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Nunito,sans-serif'}}
+        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Inter,sans-serif'}}
         onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
         onMouseLeave={e=>e.currentTarget.style.background='none'}
       >
@@ -87,7 +87,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -108,7 +108,7 @@ export default function Home() {
         body {
           background: var(--bg);
           color: var(--text);
-          font-family: 'Nunito', sans-serif;
+          font-family: 'Inter', sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
         }
@@ -156,9 +156,8 @@ export default function Home() {
         }
 
         .nav-brand {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.9rem;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--accent);
           text-decoration: none;
           letter-spacing: -0.01em;
@@ -179,7 +178,7 @@ export default function Home() {
           transition: opacity 0.2s;
         }
         .nav-cta:hover { opacity: 0.88; }
-        button.nav-cta, button.btn-primary { border: none; cursor: pointer; font-family: 'Nunito', sans-serif; }
+        button.nav-cta, button.btn-primary { border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
 
         /* ── HERO ── */
         .hero {
@@ -202,8 +201,8 @@ export default function Home() {
           border-radius: 100px;
           border: 1px solid rgba(14,165,233,0.3);
           background: rgba(14,165,233,0.06);
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
+          font-weight: 500;
           color: var(--accent);
           letter-spacing: 0.04em;
           margin-bottom: 32px;
@@ -230,7 +229,7 @@ export default function Home() {
         h1 .accent { color: var(--accent); }
 
         h1 .mono {
-          font-family: 'IBM Plex Mono', monospace;
+          font-style: italic;
           font-size: 0.85em;
           font-weight: 400;
           color: var(--muted);
@@ -264,7 +263,7 @@ export default function Home() {
           border-radius: 10px;
           background: var(--accent);
           color: #000;
-          font-family: 'Nunito', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 0.92rem;
           font-weight: 700;
           text-decoration: none;
@@ -287,7 +286,7 @@ export default function Home() {
           background: transparent;
           border: 1px solid var(--border);
           color: var(--muted);
-          font-family: 'Nunito', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 0.92rem;
           font-weight: 600;
           text-decoration: none;
@@ -320,10 +319,9 @@ export default function Home() {
 
         .stat-num {
           font-size: 2rem;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--accent);
           letter-spacing: -0.04em;
-          font-family: 'IBM Plex Mono', monospace;
         }
 
         .stat-label {
@@ -344,8 +342,8 @@ export default function Home() {
         }
 
         .section-label {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
+          font-weight: 600;
           color: var(--accent);
           letter-spacing: 0.1em;
           text-transform: uppercase;
@@ -419,7 +417,6 @@ export default function Home() {
         .step:last-child { border-right: none; }
 
         .step-num {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 2.4rem;
           font-weight: 300;
           color: var(--border);
@@ -461,7 +458,6 @@ export default function Home() {
           background: var(--surf);
           font-size: 0.76rem;
           color: var(--muted);
-          font-family: 'IBM Plex Mono', monospace;
         }
 
         .theme-dot {
@@ -526,13 +522,11 @@ export default function Home() {
         }
 
         .footer-copy {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--muted);
         }
 
         .footer-link {
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 0.72rem;
           color: var(--muted);
           text-decoration: none;
@@ -589,7 +583,7 @@ export default function Home() {
           </div>
           <a href="#how" className="btn-ghost">See how it works</a>
         </div>
-        <p style={{marginTop:20,fontSize:'0.72rem',color:'var(--muted)',fontFamily:"'IBM Plex Mono',monospace",display:'flex',alignItems:'center',gap:6}}>
+        <p style={{marginTop:20,fontSize:'0.72rem',color:'var(--muted)',display:'flex',alignItems:'center',gap:6}}>
           <span>🖥️</span> Best experienced on a desktop or laptop
         </p>
       </section>
