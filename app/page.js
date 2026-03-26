@@ -567,7 +567,6 @@ export default function Home() {
           <button className="nav-cta" onClick={e=>openDropdown('nav',e)}>
             Build Your Portfolio →
           </button>
-          {menuDropdown('nav')}
         </div>
       </nav>
 
@@ -587,7 +586,6 @@ export default function Home() {
             <button className="btn-primary" onClick={e=>openDropdown('hero',e)}>
               Build Your Portfolio →
             </button>
-            {menuDropdown('hero')}
           </div>
           <a href="#how" className="btn-ghost">See how it works</a>
         </div>
@@ -689,7 +687,6 @@ export default function Home() {
             <button className="btn-primary" onClick={e=>openDropdown('cta',e)}>
               Build Your Portfolio →
             </button>
-            {menuDropdown('cta')}
           </div>
         </div>
       </div>
@@ -703,6 +700,9 @@ export default function Home() {
       </footer>
 
       {showLoginModal && <HasPortfolioModal onClose={() => setShowLoginModal(false)} />}
+      {menuDropdown('nav')}
+      {menuDropdown('hero')}
+      {menuDropdown('cta')}
 
     </>
   );
