@@ -125,6 +125,81 @@ function ExistingUserModal({ onClose }) {
   );
 }
 
+// ─── EDIT TIP MODAL ───────────────────────────────────────────────────────────
+function EditTipModal({ username, onDismiss }) {
+  const editUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${username}/edit`;
+  return (
+    <div style={{
+      position:'fixed',inset:0,background:'rgba(0,0,0,0.8)',
+      zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:20,
+    }}>
+      <div style={{
+        background:'#161b22',border:'1px solid #30363d',borderRadius:14,
+        padding:'36px 32px',width:'100%',maxWidth:420,
+        fontFamily:'Inter,sans-serif',textAlign:'center',
+        animation:'editTipIn 0.35s cubic-bezier(0.22,1,0.36,1) both',
+      }}>
+        <style>{`@keyframes editTipIn{from{opacity:0;transform:scale(0.88) translateY(16px);}to{opacity:1;transform:scale(1) translateY(0);}}`}</style>
+
+        {/* Edit icon illustration */}
+        <div style={{
+          width:64,height:64,borderRadius:14,
+          background:'rgba(14,165,233,0.12)',border:'1px solid rgba(14,165,233,0.3)',
+          display:'flex',alignItems:'center',justifyContent:'center',
+          margin:'0 auto 20px',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+
+        <h2 style={{fontSize:'1.15rem',fontWeight:700,color:'#e6edf3',marginBottom:10,letterSpacing:'-0.01em'}}>
+          One thing before you go!
+        </h2>
+
+        <p style={{fontSize:'0.84rem',color:'#8b949e',lineHeight:1.7,marginBottom:8}}>
+          You can always come back and edit your portfolio by tapping the
+        </p>
+
+        {/* Replica of the footer edit button */}
+        <div style={{display:'inline-flex',alignItems:'center',gap:8,margin:'2px 0 10px',padding:'5px 12px',borderRadius:7,border:'1px solid rgba(14,165,233,0.4)',background:'rgba(14,165,233,0.07)'}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <span style={{fontSize:'0.72rem',color:'#0ea5e9',fontWeight:600}}>edit</span>
+        </div>
+
+        <p style={{fontSize:'0.84rem',color:'#8b949e',lineHeight:1.7,marginBottom:4}}>
+          icon at the footer of your live portfolio page.
+        </p>
+
+        <p style={{fontSize:'0.76rem',color:'#8b949e',marginBottom:24,lineHeight:1.6}}>
+          Or go directly to{' '}
+          <span style={{fontFamily:'JetBrains Mono,monospace',color:'#0ea5e9',fontSize:'0.72rem',wordBreak:'break-all'}}>
+            {editUrl}
+          </span>
+        </p>
+
+        <button
+          onClick={onDismiss}
+          style={{
+            width:'100%',padding:'12px',borderRadius:8,
+            background:'#0ea5e9',border:'none',color:'#000',
+            fontWeight:700,fontSize:'0.9rem',cursor:'pointer',
+            transition:'opacity 0.2s',fontFamily:'inherit',
+          }}
+          onMouseOver={e=>e.currentTarget.style.opacity='0.88'}
+          onMouseOut={e=>e.currentTarget.style.opacity='1'}
+        >
+          Got it — show me my portfolio 🎉
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Nav CTA with dropdown ────────────────────────────────────────────────────
 function NavCTA() {
   const [open, setOpen] = useState(false);
