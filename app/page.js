@@ -1,7 +1,223 @@
 'use client';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
+// ─── Existing-user login modal ────────────────────────────────────────────────
+function ExistingUserModal({ onClose }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim().toLowerCase(), password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Incorrect username or password.'); setLoading(false); return; }
+      // Persist session so the edit page doesn't re-ask for the password
+      try {
+        sessionStorage.setItem(
+          `edit_${username.trim().toLowerCase()}`,
+          JSON.stringify({ ...data, password, ts: Date.now() })
+        );
+      } catch (_) {}
+      window.location.href = `/${username.trim().toLowerCase()}/edit`;
+    } catch {
+      setError('Connection error. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+        zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        background: '#161b22', border: '1px solid #30363d', borderRadius: 12,
+        padding: '32px 36px', width: '100%', maxWidth: 400, fontFamily: 'Inter,sans-serif',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontFamily: 'IBM Plex Mono,monospace', color: '#0ea5e9', fontSize: '0.82rem', marginBottom: 4 }}>
+              {'<edit-portfolio />'}
+            </div>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#e6edf3', margin: 0 }}>
+              Welcome back
+            </h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>✕</button>
+        </div>
+
+        <p style={{ fontSize: '0.78rem', color: '#8b949e', marginBottom: 20, lineHeight: 1.6 }}>
+          Enter your portfolio username and password to open the editor.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: '0.68rem', color: '#8b949e', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Username
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="your-username"
+              autoFocus
+              required
+              style={{
+                width: '100%', padding: '10px 14px', background: '#21262d',
+                border: '1px solid #30363d', borderRadius: 8, color: '#e6edf3',
+                fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: '0.68rem', color: '#8b949e', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Your portfolio password"
+              required
+              style={{
+                width: '100%', padding: '10px 14px', background: '#21262d',
+                border: '1px solid #30363d', borderRadius: 8, color: '#e6edf3',
+                fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {error && (
+            <p style={{ fontSize: '0.76rem', color: '#f87171', marginBottom: 12, padding: '8px 12px', background: 'rgba(248,113,113,0.1)', borderRadius: 6, border: '1px solid rgba(248,113,113,0.25)' }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !username || !password}
+            style={{
+              width: '100%', padding: '12px', borderRadius: 8,
+              background: loading ? '#21262d' : '#0ea5e9',
+              border: 'none', color: '#000', fontWeight: 700, fontSize: '0.9rem',
+              cursor: loading || !username || !password ? 'not-allowed' : 'pointer',
+              opacity: !username || !password ? 0.5 : 1, transition: 'background 0.2s',
+            }}
+          >
+            {loading ? 'Verifying…' : '🔓 Open My Editor'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Nav CTA with dropdown ────────────────────────────────────────────────────
+function NavCTA() {
+  const [open, setOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const ref = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <>
+      <div ref={ref} style={{ position: 'relative' }}>
+        <button
+          onClick={() => setOpen(o => !o)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '8px 18px', borderRadius: 8, background: '#0ea5e9',
+            color: '#000', fontSize: '0.78rem', fontWeight: 700,
+            border: 'none', cursor: 'pointer', transition: 'opacity 0.2s',
+            fontFamily: 'inherit',
+          }}
+          onMouseOver={e => e.currentTarget.style.opacity = '0.88'}
+          onMouseOut={e => e.currentTarget.style.opacity = '1'}
+        >
+          Portfolio →
+          <span style={{
+            display: 'inline-block', marginLeft: 2, fontSize: '0.6rem',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s',
+          }}>▼</span>
+        </button>
+
+        {open && (
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+            background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)', minWidth: 220, zIndex: 200,
+            overflow: 'hidden',
+          }}>
+            <Link
+              href="/portfolio"
+              onClick={() => setOpen(false)}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '14px 16px', textDecoration: 'none', color: '#e6edf3',
+                transition: 'background 0.15s', borderBottom: '1px solid #21262d',
+              }}
+              onMouseOver={e => e.currentTarget.style.background = '#21262d'}
+              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>✨</span>
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700 }}>Build New Portfolio</div>
+                <div style={{ fontSize: '0.72rem', color: '#8b949e', marginTop: 2, lineHeight: 1.4 }}>
+                  Create yours — free, no account needed
+                </div>
+              </div>
+            </Link>
+
+            <button
+              onClick={() => { setOpen(false); setShowModal(true); }}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '14px 16px', width: '100%', background: 'transparent',
+                border: 'none', color: '#e6edf3', cursor: 'pointer',
+                textAlign: 'left', transition: 'background 0.15s', fontFamily: 'inherit',
+              }}
+              onMouseOver={e => e.currentTarget.style.background = '#21262d'}
+              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>✏️</span>
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700 }}>Edit Existing Portfolio</div>
+                <div style={{ fontSize: '0.72rem', color: '#8b949e', marginTop: 2, lineHeight: 1.4 }}>
+                  Already have one? Sign in to edit
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showModal && <ExistingUserModal onClose={() => setShowModal(false)} />}
+    </>
+  );
+}
+
+// ─── Home page ────────────────────────────────────────────────────────────────
 export default function Home() {
   useEffect(() => {
     const phrases = [
@@ -32,6 +248,7 @@ export default function Home() {
     timer = setTimeout(tick, 1200);
     return () => clearTimeout(timer);
   }, []);
+
   return (
     <>
       <style>{`
@@ -61,7 +278,6 @@ export default function Home() {
           overflow-x: hidden;
         }
 
-        /* grid bg */
         body::before {
           content: '';
           position: fixed;
@@ -74,7 +290,6 @@ export default function Home() {
           z-index: 0;
         }
 
-        /* radial glow top */
         body::after {
           content: '';
           position: fixed;
@@ -88,7 +303,6 @@ export default function Home() {
           z-index: 0;
         }
 
-        /* ── NAV ── */
         nav {
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -112,23 +326,6 @@ export default function Home() {
           letter-spacing: -0.01em;
         }
 
-        .nav-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 18px;
-          border-radius: 8px;
-          background: var(--accent);
-          color: #000;
-          font-size: 0.78rem;
-          font-weight: 700;
-          text-decoration: none;
-          letter-spacing: 0.01em;
-          transition: opacity 0.2s;
-        }
-        .nav-cta:hover { opacity: 0.88; }
-
-        /* ── HERO ── */
         .hero {
           position: relative;
           z-index: 1;
@@ -242,7 +439,6 @@ export default function Home() {
         }
         .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* ── STATS ROW ── */
         .stats {
           position: relative; z-index: 1;
           display: flex;
@@ -282,7 +478,6 @@ export default function Home() {
           text-transform: uppercase;
         }
 
-        /* ── FEATURES ── */
         .section {
           position: relative; z-index: 1;
           max-width: 1000px;
@@ -327,27 +522,10 @@ export default function Home() {
           box-shadow: 0 0 24px rgba(14,165,233,0.07);
         }
 
-        .feat-icon {
-          font-size: 1.6rem;
-          margin-bottom: 16px;
-          display: block;
-        }
+        .feat-icon { font-size: 1.6rem; margin-bottom: 16px; display: block; }
+        .feat-title { font-size: 0.98rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .feat-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; font-weight: 400; }
 
-        .feat-title {
-          font-size: 0.98rem;
-          font-weight: 700;
-          margin-bottom: 8px;
-          letter-spacing: -0.01em;
-        }
-
-        .feat-desc {
-          font-size: 0.8rem;
-          color: var(--muted);
-          line-height: 1.65;
-          font-weight: 400;
-        }
-
-        /* ── HOW IT WORKS ── */
         .steps {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -375,21 +553,9 @@ export default function Home() {
           line-height: 1;
         }
 
-        .step-title {
-          font-size: 1rem;
-          font-weight: 700;
-          margin-bottom: 8px;
-          letter-spacing: -0.01em;
-        }
+        .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.65; font-weight: 400; }
 
-        .step-desc {
-          font-size: 0.78rem;
-          color: var(--muted);
-          line-height: 1.65;
-          font-weight: 400;
-        }
-
-        /* ── THEMES STRIP ── */
         .themes-strip {
           display: flex;
           gap: 10px;
@@ -411,14 +577,8 @@ export default function Home() {
           font-family: 'IBM Plex Mono', monospace;
         }
 
-        .theme-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
+        .theme-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-        /* ── CTA BANNER ── */
         .cta-banner {
           position: relative; z-index: 1;
           max-width: 860px;
@@ -446,21 +606,9 @@ export default function Home() {
           pointer-events: none;
         }
 
-        .cta-title {
-          font-size: clamp(1.6rem, 4vw, 2.4rem);
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          margin-bottom: 12px;
-        }
+        .cta-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+        .cta-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 32px; font-weight: 400; }
 
-        .cta-sub {
-          font-size: 0.9rem;
-          color: var(--muted);
-          margin-bottom: 32px;
-          font-weight: 400;
-        }
-
-        /* ── FOOTER ── */
         footer {
           position: relative; z-index: 1;
           border-top: 1px solid var(--border);
@@ -472,28 +620,15 @@ export default function Home() {
           gap: 10px;
         }
 
-        .footer-copy {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 0.72rem;
-          color: var(--muted);
-        }
-
-        .footer-link {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 0.72rem;
-          color: var(--muted);
-          text-decoration: none;
-          transition: color 0.15s;
-        }
+        .footer-copy { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+        .footer-link { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
         .footer-link:hover { color: var(--accent); }
 
-        /* ── ANIMATIONS ── */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── RESPONSIVE ── */
         @media (max-width: 700px) {
           nav { padding: 0 20px; }
           .features-grid, .steps { grid-template-columns: 1fr; }
@@ -510,7 +645,7 @@ export default function Home() {
       {/* NAV */}
       <nav>
         <span className="nav-brand">&lt;boundforthetop /&gt;</span>
-        <Link href="/portfolio" className="nav-cta">Build Your Portfolio →</Link>
+        <NavCTA />
       </nav>
 
       {/* HERO */}
@@ -535,22 +670,10 @@ export default function Home() {
 
       {/* STATS */}
       <div className="stats" style={{position:'relative',zIndex:1,maxWidth:660,margin:'0 auto 80px',animation:'fadeUp 0.6s 0.4s ease both'}}>
-        <div className="stat">
-          <div className="stat-num">8</div>
-          <div className="stat-label">Themes</div>
-        </div>
-        <div className="stat">
-          <div className="stat-num">∞</div>
-          <div className="stat-label">Free Forever</div>
-        </div>
-        <div className="stat">
-          <div className="stat-num">&lt;2m</div>
-          <div className="stat-label">To Publish</div>
-        </div>
-        <div className="stat">
-          <div className="stat-num">PDF</div>
-          <div className="stat-label">CV Export</div>
-        </div>
+        <div className="stat"><div className="stat-num">8</div><div className="stat-label">Themes</div></div>
+        <div className="stat"><div className="stat-num">∞</div><div className="stat-label">Free Forever</div></div>
+        <div className="stat"><div className="stat-num">&lt;2m</div><div className="stat-label">To Publish</div></div>
+        <div className="stat"><div className="stat-num">PDF</div><div className="stat-label">CV Export</div></div>
       </div>
 
       {/* FEATURES */}
@@ -635,8 +758,6 @@ export default function Home() {
           <Link href="/portfolio" className="footer-link">Builder</Link>
         </div>
       </footer>
-
-
     </>
   );
 }
