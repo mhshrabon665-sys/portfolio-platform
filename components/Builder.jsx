@@ -135,7 +135,7 @@ export default function Builder({ initialData, initialPhoto, initialTheme, editM
   const[d,setD]=useState({...(initialData||INIT),heroSocials:(initialData?.heroSocials)||(INIT.heroSocials)||['linkedin','github','whatsapp']});const[tab,setTab]=useState("basic");const[photo,setPhoto]=useState(initialPhoto||null);
   const[done,setDone]=useState(false);const[showPublish,setShowPublish]=useState(false);
   const[published,setPublished]=useState(null);const[themeId,setThemeId]=useState(initialTheme||"ocean");const fileRef=useRef();
-  const[pendingPublishedUsername,setPendingPublishedUsername]=useState(null);const[showEditHint,setShowEditHint]=useState(false);
+  const[showEditHint,setShowEditHint]=useState(false);
   const[isMobile,setIsMobile]=useState(false);
   useEffect(()=>{const check=()=>setIsMobile(window.innerWidth<=768);check();window.addEventListener('resize',check);return()=>window.removeEventListener('resize',check);},[]);
   const upd=(k,v)=>setD(p=>({...p,[k]:v}));
@@ -411,18 +411,21 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
   const handlePublishSuccess = (uname) => {
     setShowPublish(false);
     if (editMode && onPublished) { onPublished(); return; }
-    setPendingPublishedUsername(uname);
+    setPublished(uname);
     setShowEditHint(true);
   };
 
   const handleEditHintClose = () => {
     setShowEditHint(false);
-    setPublished(pendingPublishedUsername);
-    setPendingPublishedUsername(null);
   };
 
   if (published) {
-    return <PublishSuccess username={published} onEdit={() => setPublished(null)} />;
+    return (
+      <>
+        <PublishSuccess username={published} onEdit={() => setPublished(null)} />
+        {showEditHint && <EditHintModal onClose={handleEditHintClose} />}
+      </>
+    );
   }
 
   return(
@@ -434,9 +437,6 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
         onClose={() => setShowPublish(false)}
         onSuccess={handlePublishSuccess}
       />
-    )}
-    {showEditHint && (
-      <EditHintModal onClose={handleEditHintClose} />
     )}
     <div style={{height:isMobile?"auto":"100vh",minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Inter',sans-serif",display:"flex",flexDirection:"column",overflow:isMobile?"auto":"hidden"}}>
       {/* TOP BAR */}
