@@ -422,7 +422,7 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
   if (published) {
     return (
       <>
-        <PublishSuccess username={published} onEdit={() => setPublished(null)} />
+        <PublishSuccess username={published} />
         {showEditHint && <EditHintModal onClose={handleEditHintClose} />}
       </>
     );
@@ -664,7 +664,7 @@ function PublishModal({ d, photo, themeId, editMode, editUsername, editPassword,
 }
 
 // ─── PUBLISH SUCCESS PAGE ─────────────────────────────────────────────────────
-function PublishSuccess({ username, onEdit }) {
+function PublishSuccess({ username }) {
   const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/${username}`;
   const [copied, setCopied] = useState(false);
 
@@ -687,9 +687,6 @@ function PublishSuccess({ username, onEdit }) {
           <a href={url} target="_blank" rel="noreferrer" style={{padding:'6px 14px',borderRadius:6,background:C.accent,color:'#000',fontSize:'0.76rem',fontWeight:600,textDecoration:'none',flexShrink:0}}>Visit →</a>
         </div>
 
-        <button onClick={onEdit} style={{padding:'10px 24px',borderRadius:8,background:'transparent',border:`1px solid ${C.border}`,color:C.muted,cursor:'pointer',fontSize:'0.82rem'}}>
-          ✏️ Edit portfolio
-        </button>
       </div>
     </div>
   );
