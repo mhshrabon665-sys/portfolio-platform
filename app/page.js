@@ -63,15 +63,17 @@ export default function Home() {
       onClick={e => e.stopPropagation()}
       style={{position:'fixed',top:dropdownPos.top,right:dropdownPos.right,background:'#161b22',border:'1px solid #30363d',borderRadius:10,minWidth:260,zIndex:9999,boxShadow:'0 8px 30px rgba(0,0,0,0.55)',overflow:'hidden'}}
     >
-      <button
-        onClick={() => { setOpenMenu(null); setDropdownPos(null); router.push('/portfolio'); }}
-        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Inter,sans-serif'}}
+      {/* SEO FIX: Changed to Link tag for crawler accessibility */}
+      <Link
+        href="/portfolio"
+        onClick={() => { setOpenMenu(null); setDropdownPos(null); }}
+        style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',borderBottom:'1px solid #21262d',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Inter,sans-serif', textDecoration:'none'}}
         onMouseEnter={e=>e.currentTarget.style.background='#21262d'}
         onMouseLeave={e=>e.currentTarget.style.background='none'}
       >
         🆕 I&apos;m new here
         <div style={{fontSize:'0.72rem',color:'#8b949e',fontWeight:400,marginTop:3}}>Create a brand-new portfolio</div>
-      </button>
+      </Link>
       <button
         onClick={() => { setOpenMenu(null); setDropdownPos(null); setShowLoginModal(true); }}
         style={{display:'block',width:'100%',padding:'14px 18px',background:'none',border:'none',color:'#e6edf3',textAlign:'left',cursor:'pointer',fontSize:'0.88rem',fontWeight:600,fontFamily:'Inter,sans-serif'}}
@@ -564,8 +566,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="hero">
+      {/* HERO - SEO FIX: Added aria-label */}
+      <section className="hero" aria-label="Hero Introduction">
         <div className="hero-tag">Free · No code · Live in minutes</div>
         <h1>
           Your portfolio,<br />
@@ -608,8 +610,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* FEATURES */}
-      <section className="section">
+      {/* FEATURES - SEO FIX: Added aria-label */}
+      <section className="section" aria-label="Key Features">
         <div className="section-label">Features</div>
         <h2 className="section-title">Everything you need,<br />nothing you don't</h2>
         <div className="features-grid">
@@ -630,8 +632,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="section" id="how">
+      {/* HOW IT WORKS - SEO FIX: Added aria-label */}
+      <section className="section" id="how" aria-label="How to build your portfolio">
         <div className="section-label">How it works</div>
         <h2 className="section-title">Three steps to live</h2>
         <div className="steps">
@@ -649,8 +651,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* THEMES */}
-      <section className="section">
+      {/* THEMES - SEO FIX: Added aria-label */}
+      <section className="section" aria-label="Portfolio Themes">
         <div className="section-label">Themes</div>
         <h2 className="section-title">Pick your aesthetic</h2>
         <div className="themes-strip">
