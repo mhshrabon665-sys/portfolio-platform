@@ -1,12 +1,12 @@
 export const metadata = {
-  metadataBase: new URL('https://www.webbuildershrabon.xyz'),
+  metadataBase: new URL('https://boundforthe.top'),
   title: 'Portfolio Builder — boundforthe.top',
   description: 'Build and publish your free portfolio in minutes. No code needed. Pick a theme, fill in your details, get a real URL instantly.',
-  keywords: ['portfolio builder', 'free portfolio', 'online portfolio', 'no code portfolio'],
+  keywords: ['portfolio builder', 'free portfolio', 'online portfolio', 'no code portfolio', 'developer portfolio', 'cv maker'],
   openGraph: {
     title: 'Portfolio Builder — boundforthe.top',
     description: 'Build and publish your free portfolio in minutes. No code needed.',
-    url: 'https://www.webbuildershrabon.xyz',
+    url: 'https://boundforthe.top',
     siteName: 'boundforthe.top',
     images: [
       {
@@ -25,13 +25,13 @@ export const metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-  icon: [
-    { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
-    { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-    { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
-  ],
-  apple: "/apple-touch-icon.png",
-},
+    icon: [
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({ children }) {
