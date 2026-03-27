@@ -224,7 +224,7 @@ ${d.references?.length?`<div class="sec"><div class="sh">References</div><div cl
           <p style={{fontSize:"0.7rem",color:C.muted}}>Shown as circle in portfolio. JPG, PNG or WebP.</p>
         </div>
       </div></SCard>
-      <Field label="Nav Brand" value={d.navBrand} onChange={v=>upd("navBrand",v)} placeholder="NAME "/>
+      <Field label="Nav Brand" value={d.navBrand} onChange={v=>upd("navBrand",v)} placeholder="your brand "/>
       <Field label="Full Name" value={d.name} onChange={v=>upd("name",v)}/>
       <Field label="Highlighted Name (accent colour)" value={d.nameHighlight} onChange={v=>upd("nameHighlight",v)}/>
       <G2><Field label="Greeting" value={d.greeting} onChange={v=>upd("greeting",v)} placeholder="Hi, I'm"/><Field label="Emoji" value={d.emoji} onChange={v=>upd("emoji",v)} placeholder="👋"/></G2>
